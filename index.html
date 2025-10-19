@@ -1,0 +1,2774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hollow Vestige</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #d4d4d4;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            padding: 10px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        #game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #121212;
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+        
+        #title-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        #title-screen h1 {
+            font-size: 2.5em;
+            color: #8b7355;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 8px rgba(139, 115, 85, 0.5);
+        }
+        
+        #title-screen p {
+            color: #888;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        #story-text {
+            font-size: 1.05em;
+            margin-bottom: 25px;
+            text-align: justify;
+            color: #c4c4c4;
+        }
+        
+        #choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .choice-btn {
+            background: #1a1a1a;
+            border: 2px solid #444;
+            color: #d4d4d4;
+            padding: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            font-family: 'Georgia', serif;
+            border-radius: 4px;
+        }
+        
+        .choice-btn:hover {
+            background: #2a2a2a;
+            border-color: #8b7355;
+            transform: translateX(5px);
+        }
+        
+        .choice-btn:active {
+            background: #333;
+        }
+        
+        #stats-panel {
+            background: #0d0d0d;
+            border: 1px solid #444;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            border-radius: 4px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px;
+            background: #1a1a1a;
+            border-radius: 3px;
+        }
+        
+        .stat-label {
+            color: #8b7355;
+            font-weight: bold;
+        }
+        
+        .stat-value {
+            color: #d4d4d4;
+        }
+        
+        #vestige-panel {
+            background: #0d0d0d;
+            border: 1px solid #444;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .vestige-item {
+            background: #1a1a1a;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid #8b7355;
+            border-radius: 3px;
+        }
+        
+        .vestige-name {
+            color: #8b7355;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .vestige-desc {
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        #combat-panel {
+            background: #1a0a0a;
+            border: 2px solid #8b0000;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .enemy-info {
+            background: #0d0d0d;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #8b0000;
+            border-radius: 3px;
+        }
+        
+        .health-bar {
+            background: #2a2a2a;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid #444;
+        }
+        
+        .health-fill {
+            background: linear-gradient(90deg, #8b0000, #ff4444);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .player-health-fill {
+            background: linear-gradient(90deg, #0a4a0a, #44ff44);
+        }
+        
+        .combat-action {
+            background: #1a1a1a;
+            border: 2px solid #8b0000;
+            color: #d4d4d4;
+            padding: 12px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Georgia', serif;
+            border-radius: 4px;
+        }
+        
+        .combat-action:hover {
+            background: #2a1a1a;
+            border-color: #ff4444;
+        }
+        
+        .combat-log {
+            background: #0a0a0a;
+            padding: 10px;
+            margin-top: 15px;
+            border: 1px solid #333;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            border-radius: 3px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px;
+        }
+        
+        .log-damage {
+            color: #ff6666;
+        }
+        
+        .log-heal {
+            color: #66ff66;
+        }
+        
+        .log-special {
+            color: #8b7355;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .location-header {
+            color: #8b7355;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        #save-load-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+
+        .save-load-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #8b7355;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .save-load-btn:hover {
+            background: #3a3a3a;
+        }
+        
+        @media (max-width: 600px) {
+            #game-container {
+                padding: 15px;
+            }
+            
+            #title-screen h1 {
+                font-size: 2em;
+            }
+            
+            #story-text {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="title-screen">
+            <h1>HOLLOW VESTIGE</h1>
+            <p>A tale of corruption, conviction, and things best left forgotten</p>
+            <button class="choice-btn" onclick="startGame()">Begin</button>
+            <button id="continue-btn" class="choice-btn hidden" onclick="loadGame()">Continue</button>
+        </div>
+        
+        <div id="game-screen" class="hidden">
+            <div id="save-load-container"></div>
+            <div id="stats-panel" class="hidden"></div>
+            <div id="vestige-panel" class="hidden"></div>
+            <div id="combat-panel" class="hidden"></div>
+            <div id="location-header" class="location-header"></div>
+            <div id="story-text"></div>
+            <div id="choices"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            player: {
+                name: "Ren",
+                health: 100,
+                maxHealth: 100,
+                corruption: 0,
+                essence: 0,
+                vestiges: [],
+                inventory: [],
+                flags: {
+                    metKael: false,
+                    kaelHostile: false,
+                    kaelRespect: 0,
+                    kaelTrust: 0,
+                    savedVillager: false,
+                    killedInnocent: false,
+                    refusedPower: false,
+                    embracedCorruption: false,
+                    sharedPast: false,
+                    sparredWithKael: false,
+                    protectedKael: false,
+                    betrayedKael: false,
+                    underworldPact: false,
+                    ashenKingDefeated: false,
+                    finalChoice: null
+                },
+                location: "start"
+            },
+            combat: {
+                active: false,
+                enemy: null,
+                turn: "player",
+                log: []
+            },
+            unlockedLocations: ["mirewood"],
+            visitedScenes: []
+        };
+
+        // Vestige Definitions
+        const vestiges = {
+            watcher: {
+                name: "The Watcher's Eye",
+                description: "A vestige of omniscience. Reveals hidden truths, but distorts your perception of reality.",
+                power: 15,
+                corruption: 10,
+                ability: "piercing_gaze",
+                abilityName: "Piercing Gaze",
+                abilityDesc: "See through deception and strike at weakness (High damage, reveals enemy stats)"
+            },
+            serpent: {
+                name: "Coil of the Drowned Serpent",
+                description: "Ancient predator of the deep waters. Grants fluid grace and venomous strikes.",
+                power: 12,
+                corruption: 8,
+                ability: "venom_strike",
+                abilityName: "Venom Strike",
+                abilityDesc: "Poison that lingers and compounds (Damage over time)"
+            },
+            martyr: {
+                name: "The Martyr's Tears",
+                description: "A saint who burned for her faith. Offers protection through sacrifice.",
+                power: 8,
+                corruption: 5,
+                ability: "sacred_shield",
+                abilityName: "Sacred Shield",
+                abilityDesc: "Convert corruption into temporary protection"
+            },
+            tyrant: {
+                name: "Crown of the Iron Tyrant",
+                description: "He ruled through fear and strength. His will can dominate lesser minds.",
+                power: 20,
+                corruption: 15,
+                ability: "dominion",
+                abilityName: "Dominion",
+                abilityDesc: "Force enemies to hesitate or turn on each other (Stun/Confusion)"
+            },
+            vagrant: {
+                name: "The Vagrant's Last Breath",
+                description: "Died nameless and forgotten. Grants the power to fade from notice.",
+                power: 10,
+                corruption: 6,
+                ability: "fade",
+                abilityName: "Fade",
+                abilityDesc: "Avoid damage and strike from shadow (Dodge + Counter)"
+            },
+            oracle: {
+                name: "The Broken Oracle",
+                description: "Saw too much, too clearly. Madness and foresight intertwined.",
+                power: 18,
+                corruption: 20,
+                ability: "future_echo",
+                abilityName: "Future Echo",
+                abilityDesc: "Strike before they move, but lose yourself in possibilities"
+            }
+        };
+
+        // Enemy Definitions
+        const enemies = {
+            hollowKnight: {
+                name: "Hollow Knight",
+                maxHealth: 80,
+                health: 80,
+                damage: 15,
+                defense: 5,
+                description: "A knight consumed by the very oath that bound them. Empty armor animated by residual duty."
+            },
+            corruptedWolf: {
+                name: "Corrupted Wolf",
+                maxHealth: 60,
+                health: 60,
+                damage: 12,
+                defense: 2,
+                description: "Once a noble beast, now twisted by dark magic. Its eyes glow with unnatural hunger."
+            },
+            wraithGuard: {
+                name: "Wraith Guard",
+                maxHealth: 70,
+                health: 70,
+                damage: 18,
+                defense: 8,
+                description: "Guardian spirit bound to forgotten tombs. Intangible and relentless."
+            },
+            kael: {
+                name: "Kael, Blade of the Ashen Order",
+                maxHealth: 150,
+                health: 150,
+                damage: 25,
+                defense: 12,
+                description: "A warrior of legendary skill. Her blade has ended countless mages. She moves like death itself."
+            },
+            ashenKing: {
+                name: "The Ashen King",
+                maxHealth: 200,
+                health: 200,
+                damage: 30,
+                defense: 15,
+                description: "The hollow god who devours essence. Reality bends around his presence."
+            },
+            ashera: {
+                name: "Commander Ashera",
+                maxHealth: 180,
+                health: 180,
+                damage: 28,
+                defense: 15,
+                description: "A veteran of the Order, her every move is a lesson in lethality. She knows every weakness."
+            }
+        };
+
+        // Story Scenes
+        const scenes = {
+            opening: {
+                location: "The Hollows",
+                text: `The rain hasn't stopped in three days. It drums against the canvas of your makeshift shelter, somewhere in the deep woods outside Mirewood. Your fingers trace the sigils carved into your forearm—glowing faint blue in the darkness.
+
+You are Ren. People called you beautiful once, delicate even, before you fled. Before the Academy burned. Before you learned that the magic they taught was a lie, and the real power—the Old Magic—came from binding the dead.
+
+The vestiges whisper at the edge of your consciousness. Fragments of gods and heroes long forgotten, their essence waiting to be claimed. Each one you bind makes you stronger. Each one corrupts you further.
+
+You've heard rumors of Mirewood, a dying village where the boundaries between worlds grow thin. Where vestiges can be found. Where the Ashen Order hunts mages like you.
+
+The rain continues. You need to move.`,
+                choices: [
+                    { text: "Head toward Mirewood. You need power if you're going to survive.", action: "mirewood_approach" },
+                    { text: "Search the woods for vestiges first. The Order will be watching the towns.", action: "woods_search" },
+                    { text: "Rest longer. You're exhausted, and magic requires focus.", action: "rest_opening" }
+                ]
+            },
+
+            rest_opening: {
+                location: "The Hollows",
+                text: `You pull your cloak tighter and close your eyes. Sleep comes fitfully, plagued by dreams of burning academies and screaming teachers. In the dream, you see her again—the woman in ashen armor, her blade reflecting flames.
+
+When you wake, your corruption has ebbed slightly. The vestiges' whispers are quieter. But you've lost time. By the markings on the trees, hunters passed nearby during the night. You were lucky.
+
+Sometimes survival is its own kind of fortune.`,
+                choices: [
+                    { text: "Move toward Mirewood now.", action: "mirewood_approach" },
+                    { text: "Search the surrounding woods.", action: "woods_search" }
+                ],
+                effects: { corruption: -5, health: 20 }
+            },
+
+            woods_search: {
+                location: "Darkwood",
+                text: `The forest is older here. Trees twist in geometries that hurt to look at directly. This is a thin place—where the veil between the living world and the realm of vestiges grows gossamer.
+
+You find it in a clearing choked with black moss: a stone altar, cracked and weathered. Resting atop it is something that glimmers in the half-light—spectral and shifting. A vestige.
+
+The Vagrant's Last Breath. You can feel its nature without touching it. This was someone who died alone, unmourned, forgotten. Their power is subtle—the ability to fade from notice, to slip between moments.
+
+But binding it will corrupt you. The Old Magic always demands payment.`,
+                choices: [
+                    { text: "Bind the vestige. You need every advantage.", action: "bind_vagrant" },
+                    { text: "Leave it. Your corruption is already dangerous.", action: "refuse_vagrant" },
+                    { text: "Study it first. Understand what you're accepting.", action: "study_vagrant" }
+                ]
+            },
+
+            bind_vagrant: {
+                location: "Darkwood",
+                text: `You press your palm against the shimmering essence. It feels cold—not the cold of winter, but the cold of absence. Of being unseen and unremembered.
+
+The vestige flows into you like smoke through your veins. For a moment, you feel what they felt: the loneliness of dying without a name, without anyone to mark your passing. Then it settles, a new weight in your soul.
+
+Your reflection in a nearby puddle flickers. Sometimes you're there. Sometimes you're not.
+
+Power gained. Humanity lost. The eternal trade.`,
+                choices: [
+                    { text: "Continue toward Mirewood.", action: "mirewood_approach" }
+                ],
+                effects: { corruption: 6, vestige: "vagrant" }
+            },
+
+            refuse_vagrant: {
+                location: "Darkwood",
+                text: `You step back from the altar. The vestige pulses once, almost questioningly, then fades back into dormancy. Some part of you feels relief—you're already losing yourself to the corruption. Every vestige brings you closer to becoming something else.
+
+But another part, the part that wants to survive at any cost, whispers that you may have just refused the power that would save your life.
+
+The forest watches in silence.`,
+                choices: [
+                    { text: "Continue toward Mirewood.", action: "mirewood_approach" }
+                ],
+                effects: { flag: "refusedPower" }
+            },
+
+            study_vagrant: {
+                location: "Darkwood",
+                text: `You sit cross-legged before the altar, studying the vestige's patterns. Every vestige retains something of its origin—echoes of personality, fragments of memory. This one is patient. It has waited decades already. It can wait longer.
+
+As you meditate, you understand: the Vagrant doesn't just grant invisibility. It grants insignificance. The power to be forgotten even as someone looks at you. It's not just stealth—it's erasure.
+
+The question is whether you're willing to erase parts of yourself.`,
+                choices: [
+                    { text: "Bind it. You understand the cost now.", action: "bind_vagrant" },
+                    { text: "Leave it. This price is too high.", action: "refuse_vagrant" }
+                ]
+            },
+
+            mirewood_approach: {
+                location: "Mirewood Village",
+                text: `Mirewood squats at the edge of a brackish marsh. The village is dying—you can see it in the abandoned homes, the slumped roofs, the way the remaining inhabitants move with the exhaustion of people who've already given up.
+
+At the village entrance, a man has been tied to a post. He's young, maybe your age, with fever-bright eyes. A sign hangs around his neck: CORRUPTED.
+
+A small crowd watches him. An older woman holds a torch.
+
+"Please," the bound man gasps. "I didn't choose this. I was just trying to help—"
+
+"Magic is corruption," the old woman says flatly. "The Order teaches us this. We cleanse what we can."
+
+She moves toward him with the torch.
+
+You could stop this. You have the power. But using magic here, in front of witnesses, would mark you. The Order has eyes everywhere.`,
+                choices: [
+                    { text: "Intervene. Use magic to free him.", action: "save_villager_magic" },
+                    { text: "Try to reason with them. No magic.", action: "save_villager_talk" },
+                    { text: "Do nothing. Your survival comes first.", action: "watch_villager_die" },
+                    { text: "Help them kill him. Prove you're not a mage.", action: "kill_villager" }
+                ]
+            },
+
+            save_villager_magic: {
+                location: "Mirewood Village",
+                text: `You don't think. Your hand moves, sigils flaring blue along your forearm. The torch flies from the woman's hand, extinguishing in a nearby puddle.
+
+The crowd turns to you. Fear ripples through them.
+
+"Another one," someone whispers.
+
+The bound man looks at you with desperate gratitude. "Thank you, I—"
+
+"Run," you tell him, snapping his bonds with a gesture. He flees into the marsh.
+
+The villagers back away from you. The old woman's face is hard. "You've damned yourself. The Order will hear of this."
+
+"They would have heard anyway," you say quietly. "At least this way, someone lives."
+
+You leave before they find their courage. But you've made a choice. You saved a life at the cost of your anonymity.`,
+                choices: [
+                    { text: "Head deeper into the village. You need supplies.", action: "mirewood_market" },
+                    { text: "Leave Mirewood. Too dangerous now.", action: "leave_mirewood" }
+                ],
+                effects: { flag: "savedVillager", corruption: -2 }
+            },
+
+            save_villager_talk: {
+                location: "Mirewood Village",
+                text: `"Wait," you call out, stepping forward. Keep your hands visible. Non-threatening.
+
+The old woman turns. "This doesn't concern you, stranger."
+
+"I'm a traveler. I've seen corruption before." You measure your words carefully. "That man doesn't show the signs. No discoloration, no madness in his eyes. Just fear."
+
+"He used magic—"
+
+"Healing magic," you interrupt. "To save a child who fell in the marsh. I heard about it in the last town. That's not corruption. That's desperation."
+
+The crowd murmurs. Doubt creeps in.
+
+The old woman studies you for a long moment. Then, surprisingly, she lowers the torch. "Fine. He lives. But he leaves Mirewood. Tonight."
+
+She cuts him down. The man stumbles, then looks at you with shock and gratitude.
+
+"Go," you tell him quietly. "Before she changes her mind."
+
+You've saved a life without revealing yourself. Small victories.`,
+                choices: [
+                    { text: "Explore the village.", action: "mirewood_market" }
+                ],
+                effects: { flag: "savedVillager" }
+            },
+
+            watch_villager_die: {
+                location: "Mirewood Village",
+                text: `You watch. You do nothing.
+
+The man screams as the flames take him. The smell of burning flesh fills the air. The crowd watches in grim silence—this isn't entertainment, just necessity. Just survival in a world that fears magic.
+
+You walk past them, keeping your marked arm covered. The old woman doesn't even glance at you.
+
+That night, you dream of burning. Of screaming. Of choosing silence over mercy.
+
+When you wake, you tell yourself it was pragmatism. Survival requires hard choices. But the vestiges whisper in agreement, and that bothers you more than anything.`,
+                choices: [
+                    { text: "Explore the village.", action: "mirewood_market" }
+                ],
+                effects: { corruption: 8 }
+            },
+
+            kill_villager: {
+                location: "Mirewood Village",
+                text: `"Let me," you say, stepping forward. "I've dealt with corrupted before. It's best done quickly."
+
+The old woman hands you a knife, watching your face. You take it. The bound man looks at you with betrayal and terror.
+
+"Please—"
+
+You make it quick. Cleaner than burning. His blood is warm on your hands.
+
+The crowd disperses, satisfied. The old woman nods. "The Order would approve. You can stay in Mirewood, if you wish."
+
+But that night, your vestiges scream. They know what you are: someone willing to kill innocents to preserve yourself. The corruption spreads faster. Magic built on selfishness always does.
+
+You've damned yourself more thoroughly than any vestige could.`,
+                choices: [
+                    { text: "Explore the village.", action: "mirewood_market" }
+                ],
+                effects: { corruption: 15, flag: "killedInnocent" }
+            },
+
+            mirewood_market: {
+                location: "Mirewood Village",
+                text: `The village market is sparse—a few stalls selling fish from the marsh, rotting vegetables, rust-spotted tools. Mirewood is past its prime, clinging to existence through stubbornness alone.
+
+You notice a hooded figure watching you from across the square. They're too still, too focused. Then they move, approaching with deliberate purpose.
+
+When they draw close enough, you see the ashen gray cloak. The sword at their hip. The burn scar across their jaw.
+
+An Ashen Order knight.
+
+"You," they say. Their voice is feminine, cold. "Let me see your arms."
+
+Your marked arm burns under your sleeve. If she sees the sigils, you're dead.`,
+                choices: [
+                    { text: "Run. Use your magic to escape.", action: "flee_kael_magic" },
+                    { text: "Comply. Keep your marked arm hidden somehow.", action: "deceive_kael" },
+                    { text: "Attack first. She's clearly here to kill you.", action: "fight_kael_first" },
+                    { text: "Stand your ground. Face her honestly.", action: "honest_kael" }
+                ]
+            },
+
+            flee_kael_magic: {
+                location: "Mirewood Village",
+                text: `You bolt. Blue sigils flare across your skin as you channel power into your legs. The world blurs—
+
+Her sword cuts the air where you were standing a second ago. Fast. Impossibly fast.
+
+"Confirmed mage!" she shouts. "By order of the Ashen King, you will be cleansed!"
+
+You run through the market, knocking over stalls. She's behind you, always just behind you, her blade singing through the air. You duck into an alley, vault a fence, splash through the marsh—
+
+She doesn't tire. Doesn't slow.
+
+You're forced to fight or be cut down from behind.`,
+                choices: [
+                    { text: "Turn and face her.", action: "combat_kael_1" }
+                ],
+                effects: { flag: "kaelHostile" }
+            },
+
+            deceive_kael: {
+                location: "Mirewood Village",
+                text: `You extend your left arm—the unmarked one. Keep your right tucked in your cloak, as if cold.
+
+She studies you. Gray eyes like winter sky. Her hand rests on her sword hilt.
+
+"Both arms."
+
+"I have a wound," you lie. "Infected. I'd rather not—"
+
+"Show me. Or draw your weapon."
+
+There's no mercy in her voice. But there's no eagerness either. She's not cruel—just absolute. This is her duty.
+
+You could try to fast-talk her. Or you could fight. Or...
+
+"Before you kill me," you say quietly, "tell me your name. I'd like to know who ends this."
+
+She blinks. It's the first surprise you've seen on her face.
+
+"Kael," she says after a moment. "Blade of the Ashen Order. And you are?"
+
+"Ren." You meet her eyes. "I'm Ren, and I am what you hunt."
+
+You roll up your right sleeve, showing the glowing sigils.
+
+Her sword doesn't move. She just... looks at you. Really looks at you.
+
+"You're young," she says finally.
+
+"So were you, once."
+
+"Why aren't you running?"
+
+"I'm tired of running."
+
+Silence stretches between you. In that moment, something passes—recognition, maybe. An understanding that you're both caught in something larger than yourselves.
+
+"I should kill you," Kael says.
+
+"Yes."
+
+"But you didn't resist. You showed me willingly."
+
+"Would it have mattered if I didn't?"
+
+A ghost of something—not quite a smile—crosses her face. "No."
+
+She lowers her sword. Just slightly.
+
+"Leave Mirewood. Tonight. If I see you again, I will kill you. But tonight..." She steps back. "I never found a mage here. Just rumors."
+
+She turns and walks away, leaving you standing in the market square, alive and utterly bewildered.`,
+                choices: [
+                    { text: "Call after her. Ask why she let you go.", action: "question_kael" },
+                    { text: "Leave immediately. Don't push your luck.", action: "leave_mirewood" },
+                    { text: "Follow her at a distance. You need to understand.", action: "follow_kael" }
+                ],
+                effects: { flag: "metKael", kaelTrust: 2 }
+            },
+
+            honest_kael: {
+                location: "Mirewood Village",
+                text: `"No," you say simply.
+
+Her hand tightens on her sword. "Refusing an Order inspection is admission of—"
+
+"I'm a mage," you interrupt. "I have the sigils. I've bound vestiges. I am exactly what you hunt." You keep your hands visible, non-threatening. "So either kill me or hear me out."
+
+Kael's eyes narrow. "You're either brave or suicidal."
+
+"Probably both."
+
+For a long moment, she doesn't move. You can see her weighing options, calculations flickering behind those gray eyes. Then, unexpectedly, she gestures to a nearby tavern.
+
+"Inside. We talk. You try to run or cast, and I'll cut you in half before the syllable leaves your mouth."
+
+"Fair enough."
+
+You sit across from each other in the dim tavern. She keeps one hand on her sword. You keep your hands on the table.
+
+"Why?" she asks.
+
+"Why what?"
+
+"Why tell me? You could have run. Fought. Lied. Why admit it?"
+
+"Because I'm tired," you say honestly. "And because... I wanted to see if the stories about the Ashen Order were true. That you're all blind zealots who kill without question."
+
+"And?"
+
+"You're sitting here talking to me. So maybe not all of them."
+
+Something shifts in her expression. Not softening, exactly, but... considering.
+
+"The Order teaches that magic corrupts absolutely," Kael says. "That every mage becomes a monster eventually."
+
+"And do you believe that?"
+
+"I've killed seventeen mages. Fifteen of them were monsters." She pauses. "Two were just desperate."
+
+"Which category am I?"
+
+"I don't know yet." She leans back. "I should kill you. My orders are absolute."
+
+"But you're still talking."
+
+"Yes." She says it like she's surprised at herself. "I am."`,
+                choices: [
+                    { text: "Tell her about the Academy. About why you fled.", action: "share_past_kael" },
+                    { text: "Ask about her. Why she joined the Order.", action: "ask_kael_past" },
+                    { text: "Keep it practical. Offer a deal.", action: "deal_kael" }
+                ],
+                effects: { flag: "metKael", kaelTrust: 3, kaelRespect: 2 }
+            },
+
+            share_past_kael: {
+                location: "Mirewood Tavern",
+                text: `"I was at the Academy," you say. "The one in Valeshire. We studied approved magic—healing, wards, light. Safe magic."
+
+Kael listens without interrupting.
+
+"Then one night, the headmaster called us all to the grand hall. He told us the truth: there is no safe magic. All magic comes from the same source—the Hollows, where gods died and left their essence behind. The difference between 'approved' magic and 'corrupted' magic is just... how honest you are about the cost."
+
+"That's heresy."
+
+"That's why they burned the Academy." You meet her eyes. "The Order came three days later. Killed the headmaster, killed anyone who wouldn't recant. I fled. I've been running ever since."
+
+"And the vestiges?"
+
+"I was going to die in the woods. Alone, hunted, powerless. The vestiges offered strength. So I took it." You show her your marked arm. "Every day, I become a little less human. But every day, I'm alive."
+
+Kael is quiet for a long time.
+
+"I was nine when the Order found me," she says finally. "My village had been destroyed by a rogue mage. He'd bound too many vestiges, gone mad with power, and turned everyone into his puppets. The Order killed him. Saved me. Trained me." She touches the scar on her jaw. "I became what I am because I've seen what magic does."
+
+"I'm sorry."
+
+"Don't be. It made me strong." But there's something in her voice—not quite doubt, but... weariness. "Every mage says they'll be different. That they'll control it. None of them do."
+
+"Maybe I won't either," you admit. "But I'm trying."
+
+She stands abruptly. "Leave Mirewood. I'll report that the rumors were false."
+
+"Why?"
+
+"Because you're honest. And because..." She hesitates. "Because I'm tired of killing people who might have been something else."
+
+She leaves. But something has shifted between you. Some thread now connects your fates.`,
+                choices: [
+                    { text: "Leave Mirewood as she suggested.", action: "leave_mirewood" },
+                    { text: "Stay. You need supplies and vestiges.", action: "stay_mirewood" }
+                ],
+                effects: { flag: "sharedPast", kaelTrust: 5, kaelRespect: 3, corruption: -3 }
+            },
+
+            ask_kael_past: {
+                location: "Mirewood Tavern",
+                text: `"Your turn," you say. "Why join the Order? They don't exactly recruit from the cheerful optimists."
+
+Her jaw tightens. For a moment, you think she won't answer.
+
+"I was nine," she says finally. "My village was Ashford, in the northern reaches. A mage came through—young man, not much older than you. He seemed kind. He healed my mother's cough, helped with the harvest. We trusted him."
+
+She's not looking at you anymore. She's looking through you, at something years gone.
+
+"He was binding vestiges. Growing stronger. And when the corruption took hold..." Her hand trembles slightly on her sword hilt. "He turned everyone into puppets. Made them dance, made them hurt each other, made them—"
+
+She stops.
+
+"The Order came. Ended him. I was the only one left alive. They gave me a choice: die with my village, or live with purpose. So I chose the sword."
+
+"I'm sorry."
+
+"Don't be." She looks at you again, eyes hard. "It taught me what magic really is. A poison that dresses itself as power."
+
+"But you're still talking to me."
+
+"Yes." She says it like an accusation against herself. "I am."`,
+                choices: [
+                    { text: "Tell her about your past.", action: "share_past_kael" },
+                    { text: "Offer to leave. Make this easier for her.", action: "leave_offer_kael" },
+                    { text: "Challenge her. Ask if she ever questions the Order.", action: "challenge_kael" }
+                ],
+                effects: { kaelTrust: 3, kaelRespect: 1 }
+            },
+
+            challenge_kael: {
+                location: "Mirewood Tavern",
+                text: `"Do you ever question it?" you ask. "The Order's teachings? Whether every mage really deserves death?"
+
+Her eyes flash. "Careful."
+
+"I'm already dead if you decide I am. Might as well ask." You lean forward. "You've killed seventeen mages. Fifteen monsters, two desperate people. That's what you said. So you've already admitted that not all of us are the same."
+
+"Doesn't matter. The two who were desperate would have become monsters eventually."
+
+"How do you know?"
+
+"Because magic corrupts. Always."
+
+"Does it?" You tap your marked arm. "Or does fear and persecution corrupt? If the only people who taught me magic were monsters, if the only path I had was to bind vestiges in the dark, if every hand was raised against me—what am I supposed to become?"
+
+Kael stands abruptly, her chair scraping back. Her hand is on her sword.
+
+"You're dangerously close to making me regret this conversation."
+
+"But I'm not wrong."
+
+She stares at you. You can see the war behind her eyes—duty versus doubt, certainty versus questions she's never allowed herself to ask.
+
+"Leave," she says quietly. "Before I remember who I'm supposed to be."
+
+You stand. As you pass her, you say softly, "Maybe you're supposed to be someone who asks questions."
+
+You leave her standing in the tavern, hand still on her sword, eyes full of a conflict that wasn't there before.`,
+                choices: [
+                    { text: "Leave Mirewood.", action: "leave_mirewood" }
+                ],
+                effects: { kaelRespect: 4, kaelTrust: 1, flag: "challengedOrder" }
+            },
+
+            leave_offer_kael: {
+                location: "Mirewood Tavern",
+                text: `"I'll leave," you say. "Tonight, like you suggested. You never found anything. Just another false rumor."
+
+She nods slowly. "That would be... simpler."
+
+"For both of us." You stand, then pause. "For what it's worth, I understand why you do this. What you've seen. I just wish..."
+
+"What?"
+
+"I wish the world had space for people like us to be something other than enemies."
+
+Kael's expression is unreadable. "The world doesn't care what we wish."
+
+"No. It doesn't."
+
+You leave. But as you step into the night, you glance back. She's still sitting there, staring at her hands. Wondering, perhaps, what she's becoming.`,
+                choices: [
+                    { text: "Leave Mirewood.", action: "leave_mirewood" }
+                ],
+                effects: { kaelTrust: 4, kaelRespect: 2 }
+            },
+
+            deal_kael: {
+                location: "Mirewood Tavern",
+                text: `"Here's my offer," you say. "I leave Mirewood. You report the rumors were false. We both walk away."
+
+"That's not a deal. That's me doing you a favor."
+
+"Then let me add something: I'll help you."
+
+Her eyes narrow. "Help me how?"
+
+"You hunt corrupted mages. The ones who've gone too far, who are hurting people. I can find them. The vestiges call to each other—I can sense when someone's carrying too many, when they're losing themselves." You meet her gaze. "Let me be useful. Give me a reason to stay human."
+
+"You want me to work with a mage."
+
+"I want us both to survive in a world that's trying to kill us. Different methods, same goal."
+
+She's quiet for a long time. Then, surprisingly, she pulls out a small piece of ash-stained cloth and slides it across the table.
+
+"If you're serious—if you find a corrupted mage—burn this. I'll come."
+
+"That's not a partnership. That's you keeping tabs on me."
+
+"It's all I can offer without betraying everything I am." She stands. "Take it or leave it."
+
+You take the cloth. It's warm to the touch, infused with some kind of tracking magic.
+
+"Don't make me regret this," Kael says.
+
+"Same to you."
+
+She leaves. You're left holding a piece of cloth that's either a lifeline or a leash. Maybe both.`,
+                choices: [
+                    { text: "Leave Mirewood.", action: "leave_mirewood" }
+                ],
+                effects: { kaelTrust: 3, kaelRespect: 3, flag: "kaelPact" }
+            },
+
+            combat_kael_1: {
+                location: "Mirewood Outskirts",
+                combat: true,
+                enemy: "kael",
+                text: `Kael stops a dozen paces away, sword drawn. Rain begins to fall.
+
+"I won't let you run," she says. "Face me properly, or die with your back turned."
+
+You can see it in her stance: she's done this before. Many times. She's fast, skilled, and absolutely certain in her purpose.
+
+This isn't a fight you can win. But maybe you can survive it.`,
+                onVictory: "kael_defeated_1",
+                onDefeat: "kael_kills_player_1"
+            },
+
+            kael_defeated_1: {
+                location: "Mirewood Outskirts",
+                text: `You land a final, desperate blow. Kael stumbles back, clutching a wound in her side. Her sword is still in her hand, but her stance is broken. She's beaten.
+
+"How?" she breathes, more surprised than angry. "You're untrained. Wild. But you..."
+
+She looks at you, not with hatred, but with a new, grudging respect.
+
+"Go," she says, lowering her sword. "I lost. The Order's code is clear. I won't pursue."
+
+She watches you leave, a warrior defeated by something she doesn't understand. You've earned her respect, but also her undivided attention. She will remember this.`,
+                choices: [
+                    { text: "Leave Mirewood.", action: "leave_mirewood" }
+                ],
+                effects: { kaelRespect: 5, kaelTrust: -2, flag: "defeatedKael" }
+            },
+
+            kael_kills_player_1: {
+                location: "Mirewood Outskirts",
+                text: `Her blade is a blur. You parry, dodge, but she's too fast, too skilled. The fight is over before it truly begins.
+
+Cold steel finds your heart. As your vision fades, the last thing you see is Kael's face—not triumphant, but weary. Resigned.
+
+"Another one cleansed," she whispers to the rain. "May you find peace."
+
+Your journey ends here.`,
+                final: true
+            },
+
+            leave_mirewood: {
+                location: "The Road North",
+                text: `You leave Mirewood behind, following the old road north toward the Cinderpeak Mountains. The rain has finally stopped, leaving the world gray and dripping.
+
+Your thoughts keep returning to Kael. Her certainty. Her doubt. The way she looked at you—not quite as a monster, but not quite as human either. Something in between.
+
+After two days of travel, you find another vestige site: an ancient battlefield, where thousands died in a war whose cause has been forgotten. The grass doesn't grow right here. The air tastes of old iron.
+
+In the center of the field stands a stone cairn, and hovering above it: The Coil of the Drowned Serpent.
+
+You can feel its power—fluid, graceful, venomous. A predator's patience.`,
+                choices: [
+                    { text: "Bind the Serpent vestige.", action: "bind_serpent" },
+                    { text: "Leave it. Continue north.", action: "continue_north" },
+                    { text: "Study it first.", action: "study_serpent" }
+                ]
+            },
+
+            stay_mirewood: {
+                location: "Mirewood Village",
+                text: `You stay. It's risky, but you need supplies, and the rumors of vestige sites near Mirewood are too valuable to ignore.
+
+You spend the next day quietly exploring, avoiding attention. In the marsh south of town, you find what you're looking for: a collapsed shrine, half-submerged in black water.
+
+The Coil of the Drowned Serpent hovers above the waterline, ghostly and sinuous.
+
+But as you approach, you hear footsteps behind you. You turn.
+
+Kael. She's tracking you.
+
+"I told you to leave," she says.
+
+"I needed supplies."
+
+"You need vestiges." She nods toward the Serpent. "I can sense them too. The Order trained me to hunt them."
+
+"Are you here to stop me?"
+
+"I'm here to see what you choose."`,
+                choices: [
+                    { text: "Bind the vestige in front of her. Show her what you are.", action: "bind_serpent_kael" },
+                    { text: "Walk away from the vestige. Choose her trust over power.", action: "refuse_serpent_kael" },
+                    { text: "Ask her to leave first. You need privacy.", action: "ask_kael_leave" }
+                ]
+            },
+
+            bind_serpent: {
+                location: "The Forgotten Battlefield",
+                text: `You reach for the Coil. It unwinds slowly, testing you, tasting your essence. Then it strikes—faster than thought, coiling around your arm and sinking into your flesh.
+
+The sensation is drowning. Water filling your lungs, pressure crushing your chest, and then—release. You can breathe underwater. You can strike like a serpent. Venom pools beneath your tongue.
+
+But your reflection in a puddle shows scales flickering across your neck. Just for a moment. Then gone.
+
+More power. More corruption. The eternal bargain.`,
+                choices: [
+                    { text: "Continue north toward Cinderpeak.", action: "cinderpeak_approach" }
+                ],
+                effects: { corruption: 8, vestige: "serpent" }
+            },
+
+            study_serpent: {
+                location: "The Forgotten Battlefield",
+                text: `You circle the Serpent, studying its patterns. This vestige was a predator—patient, efficient, merciless. It waited in deep water for prey to come to it. It never wasted energy. Every strike was lethal.
+
+If you bind it, you'll gain that patience. That efficiency. But you'll also gain its coldness. Its inability to see anything except as prey or irrelevant.
+
+The question is whether you can maintain your humanity while carrying a predator's soul.`,
+                choices: [
+                    { text: "Bind it. You can handle it.", action: "bind_serpent" },
+                    { text: "Leave it. Not worth the risk.", action: "continue_north" }
+                ]
+            },
+
+            bind_serpent_kael: {
+                location: "Mirewood Marsh",
+                text: `You don't break eye contact with Kael as you reach for the Serpent.
+
+"Don't," she says. Not a command. Almost... a plea.
+
+"I need this power."
+
+"You need to stay human more."
+
+"Maybe I can't afford humanity right now."
+
+The Serpent coils around your arm, sinking in. Kael's hand moves to her sword, then stops. She watches the corruption spread—subtle, but visible to someone trained to see it.
+
+When it's done, you meet her eyes. She looks... disappointed? Sad?
+
+"Every vestige makes it easier to bind the next one," she says quietly. "Until you're more vestige than person. I've seen it happen."
+
+"Then stop me. Isn't that your job?"
+
+"I should." Her hand is still on her sword. "But I won't. Not yet."
+
+"Why?"
+
+"Because you looked me in the eye while you did it. You're not hiding what you're becoming. There's... something honest in that. Terrible, but honest."
+
+She turns and walks away, leaving you with new power and the weight of her disappointment.`,
+                choices: [
+                    { text: "Follow her. Try to explain.", action: "explain_to_kael" },
+                    { text: "Let her go. Focus on your goal.", action: "cinderpeak_approach" }
+                ],
+                effects: { corruption: 8, vestige: "serpent", kaelRespect: -2, kaelTrust: 1 }
+            },
+
+            refuse_serpent_kael: {
+                location: "Mirewood Marsh",
+                text: `You look at the Serpent. Then at Kael. Then back to the vestige.
+
+"No," you say.
+
+"What?"
+
+"I said no. I'm not binding it."
+
+Kael's expression shifts—surprise, then something else. Respect, maybe.
+
+"Why?"
+
+"Because..." You search for the words. "Because someone's watching who wants me to stay human. And maybe that matters more than power right now."
+
+You turn and walk away from the vestige. It pulses once, disappointed, then fades back into dormancy.
+
+Kael falls into step beside you.
+
+"That was the first time," she says.
+
+"First time what?"
+
+"First time I've seen a mage turn down power willingly." She's quiet for a moment. "Maybe you're different."
+
+"Or maybe I'm just scared of what I'm becoming."
+
+"Good. Fear is what keeps you human."
+
+You walk together in silence. It's not quite friendship. But it's not enmity either. It's something new, undefined, fragile.`,
+                choices: [
+                    { text: "Ask where she's going.", action: "travel_with_kael" },
+                    { text: "Part ways here. Too dangerous to travel together.", action: "part_ways_kael" }
+                ],
+                effects: { kaelTrust: 7, kaelRespect: 5, corruption: -5, flag: "refusedPowerForKael" }
+            },
+
+            ask_kael_leave: {
+                location: "Mirewood Marsh",
+                text: `"Can you give me privacy?" you ask.
+
+"So you can bind it without me seeing?"
+
+"So I can make my choice without judgment."
+
+Kael studies you. "You're going to bind it no matter what I say."
+
+"Maybe. Maybe not. But I'd like to decide without someone's hand on their sword."
+
+She nods slowly and walks back toward the village. You're alone with the vestige.
+
+The question is: did you send her away to avoid her judgment, or to avoid disappointing her?`,
+                choices: [
+                    { text: "Bind the Serpent.", action: "bind_serpent" },
+                    { text: "Leave the vestige. She trusted you with privacy.", action: "refuse_serpent_private" }
+                ]
+            },
+
+            refuse_serpent_private: {
+                location: "Mirewood Marsh",
+                text: `You turn away from the Serpent. Walk back to Mirewood without binding it.
+
+Kael is waiting at the village edge. When she sees you approach without new corruption staining your aura, something in her posture relaxes.
+
+"You didn't take it," she says.
+
+"No."
+
+"Why?"
+
+"Because you trusted me enough to walk away. Seemed wrong to betray that."
+
+She almost smiles. Almost. "You're strange, for a mage."
+
+"You're strange, for an Order knight."
+
+"Fair."
+
+This time, she walks with you out of Mirewood. Not as warden and prisoner. As... something else.`,
+                choices: [
+                    { text: "Travel together.", action: "travel_with_kael" }
+                ],
+                effects: { kaelTrust: 8, kaelRespect: 6, corruption: -5 }
+            },
+
+            travel_with_kael: {
+                location: "The Northern Road",
+                text: `You travel together for three days. It's awkward at first—she's trained to kill you, you're what she hunts. But slowly, carefully, you find a rhythm.
+
+She teaches you sword forms. "If you rely only on magic, the corruption will eat you faster," she explains. "Physical skill gives you options."
+
+You teach her about vestiges. "They're not all evil. They're just... echoes. Some were good people who made bad choices. Some were monsters. The vestige itself is neutral—it's what you do with it that matters."
+
+"That's dangerous thinking," she says.
+
+"Maybe. But it's true."
+
+On the third night, camped in a ruined watchtower, she asks: "Where are you going? What's your endgame?"
+
+"Cinderpeak," you say. "There's supposed to be a powerful vestige there. The Watcher's Eye. It grants perception, knowledge of hidden things."
+
+"Why do you need it?"
+
+"Because I need to understand what's happening to me. What the corruption really is. The Academy lied, the Order lies. I need truth."
+
+She's quiet for a long time. Then: "Cinderpeak is Order territory. They have a fortress there."
+
+"I know."
+
+"You're walking into a death trap."
+
+"I know that too."
+
+"And you're going anyway."
+
+"Yes."
+
+She sighs. "You're either incredibly brave or incredibly stupid."
+
+"Can't it be both?"
+
+This time, she actually laughs. It's a rusty sound, like she's forgotten how.`,
+                choices: [
+                    { text: "Ask her to come with you to Cinderpeak.", action: "invite_kael_cinderpeak" },
+                    { text: "Suggest you part ways here. Safer for both of you.", action: "part_ways_before_cinderpeak" }
+                ],
+                effects: { kaelTrust: 10, kaelRespect: 7 }
+            },
+
+            part_ways_kael: {
+                location: "Mirewood Outskirts",
+                text: `"This is where we separate," you say. "You have your mission. I have mine."
+
+Kael nods. "Probably wise. If the Order found us together..."
+
+"They'd kill us both."
+
+"Yes."
+
+You turn to leave, then pause. "Kael? Thank you. For not killing me when you could have."
+
+"Don't thank me yet. If we meet again, if you've gone too far..." She doesn't finish the sentence. Doesn't need to.
+
+"I understand."
+
+You walk north alone, wondering if you've just said goodbye to the only person who saw you as something other than monster or victim.`,
+                choices: [
+                    { text: "Continue north.", action: "cinderpeak_approach" }
+                ]
+            },
+
+            continue_north: {
+                location: "The Road to Cinderpeak",
+                text: `The mountains loom larger each day. Cinderpeak stands among them like a broken tooth—volcanic, lifeless, wreathed in ash clouds. Somewhere in those peaks lies the Watcher's Eye.
+
+You camp in an abandoned village on the fifth day. That night, you're attacked.
+
+They come silently—three of them. Hollow Knights: warriors whose souls have been consumed by their own oaths, leaving only animate armor driven by residual duty.
+
+They move in perfect sync, cutting off escape routes. Their empty helms track you with geometric precision.
+
+This is your first real test.`,
+                choices: [
+                    { text: "Fight them.", action: "combat_hollow_knights" }
+                ]
+            },
+
+            combat_hollow_knights: {
+                location: "Abandoned Village",
+                combat: true,
+                enemy: "hollowKnight",
+                text: `The Hollow Knights separate, forming a triangle around you. Their swords scrape from their sheaths in perfect unison.
+
+They attack.`,
+                onVictory: "defeat_hollow_knights",
+                onDefeat: "death_hollow_knights"
+            },
+
+            death_hollow_knights: {
+                location: "Abandoned Village",
+                text: `They are relentless, a storm of steel and silence. You fight bravely, but their coordinated assault is too much. One feints, another strikes. You block, but the third finds an opening.
+
+Pain, then darkness. Your journey ends in a forgotten village, another victim of the world's endless conflicts.`,
+                final: true
+            },
+
+            defeat_hollow_knights: {
+                location: "Abandoned Village",
+                text: `The last Hollow Knight falls, armor clattering empty to the ground. Where its heart should be, there's only a hollow space—literally. Whatever made them human is long gone.
+
+You're wounded, exhausted, but alive. As the armor settles, something glints in the debris: a small crystal, pulsing with residual essence.
+
+A vestige fragment. Not powerful enough to bind, but it could enhance one you already have. Or you could absorb it for temporary strength.`,
+                choices: [
+                    { text: "Absorb it for healing and power.", action: "absorb_fragment" },
+                    { text: "Save it. Might be useful later.", action: "save_fragment" },
+                    { text: "Destroy it. Don't risk more corruption.", action: "destroy_fragment" }
+                ],
+                effects: { essence: 15 }
+            },
+
+            absorb_fragment: {
+                location: "Abandoned Village",
+                text: `You press the fragment against your chest. It sinks in, warm and electric. Your wounds close. Strength floods back.
+
+But you can hear the vestiges you carry whispering louder now, fed by the new essence. They're getting stronger. So is the corruption.`,
+                choices: [
+                    { text: "Continue toward Cinderpeak.", action: "cinderpeak_approach" }
+                ],
+                effects: { health: 40, corruption: 5 }
+            },
+
+            save_fragment: {
+                location: "Abandoned Village",
+                text: `You wrap the fragment in cloth and tuck it away. It pulses against your ribs like a second heartbeat. You don't know what you'll use it for, but instinct says to keep it.
+
+Sometimes power is best saved for when you really need it.`,
+                choices: [
+                    { text: "Continue toward Cinderpeak.", action: "cinderpeak_approach" }
+                ],
+                effects: { item: "essence_fragment" }
+            },
+
+            destroy_fragment: {
+                location: "Abandoned Village",
+                text: `You place the fragment on a stone and shatter it with the pommel of a fallen knight's sword. The essence dissipates into the air with a sound like a sigh.
+
+Somewhere, you feel the vestiges you carry... disappointed. They wanted that power. But you denied them.
+
+Small acts of resistance. They matter.`,
+                choices: [
+                    { text: "Continue toward Cinderpeak.", action: "cinderpeak_approach" }
+                ],
+                effects: { corruption: -3 }
+            },
+
+            cinderpeak_approach: {
+                location: "Cinderpeak Foothills",
+                text: `The ash is thick here. It coats everything, mutes sound, turns the world grayscale. The Cinderpeak volcano hasn't erupted in centuries, but it still breathes—slow plumes of smoke rising from its caldera.
+
+The Order fortress sits on the eastern slope, carved into the mountain itself. You give it wide berth.
+
+Your goal lies higher: the Sanctum of the Watcher, an ancient temple where the vestige of a dead oracle supposedly resides. The path is treacherous—loose scree, toxic fumes, and things that move in the ash clouds.
+
+Halfway up, you find a body. Recent. A mage, judging by the sigils on their arms. They bound too many vestiges—you can see the corruption has twisted their flesh into something inhuman.
+
+A warning. Or a prophecy of what you might become.`,
+                choices: [
+                    { text: "Search the body. They might have useful items.", action: "search_dead_mage" },
+                    { text: "Pay respects and move on.", action: "respect_dead_mage" },
+                    { text: "Absorb their residual essence. Wasteful not to.", action: "consume_dead_mage" }
+                ]
+            },
+
+            search_dead_mage: {
+                location: "Cinderpeak Slope",
+                text: `You search carefully, trying not to think about the fact that this could be your future.
+
+In their pack: a journal, water-damaged but partly readable. Rations, spoiled. And something else—a small vial of silvery liquid. Essence stabilizer. Extremely rare. It can temporarily reduce corruption.
+
+The journal's last entry reads: "The Watcher showed me truth. I saw what I was becoming. I ran. Not fast enough. If you're reading this: the Watcher doesn't lie. Be ready for what it shows you."`,
+                choices: [
+                    { text: "Take the vial and continue.", action: "approach_sanctum" }
+                ],
+                effects: { item: "essence_stabilizer" }
+            },
+
+            respect_dead_mage: {
+                location: "Cinderpeak Slope",
+                text: `You close their eyes and arrange their body as best you can. They deserve that much. Whatever they were running from, whatever they became, they were human once.
+
+As you turn to leave, you notice something carved into the rock beside them: "THE WATCHER SEES ALL. INCLUDING WHO YOU TRULY ARE."
+
+A warning? A promise? Both, perhaps.`,
+                choices: [
+                    { text: "Continue to the Sanctum.", action: "approach_sanctum" }
+                ],
+                effects: { corruption: -2 }
+            },
+
+            consume_dead_mage: {
+                location: "Cinderpeak Slope",
+                text: `You place your hand on their chest and draw out the residual essence. It comes reluctantly, tainted and bitter, but power is power.
+
+The corruption spreads further. Your reflection in a pool of rainwater shows your eyes flickering with unnatural light.
+
+The vestiges you carry approve. That's what worries you most.`,
+                choices: [
+                    { text: "Continue to the Sanctum.", action: "approach_sanctum" }
+                ],
+                effects: { corruption: 12, essence: 20 }
+            },
+
+            approach_sanctum: {
+                location: "Sanctum of the Watcher",
+                text: `The Sanctum is carved from black volcanic glass. It reflects nothing—not light, not sound, not even your own image. A non-place. A void where something watches.
+
+The entrance stands open.
+
+Inside, you can see the vestige: The Watcher's Eye, hovering above an obsidian altar. It's not like the others. It doesn't just shimmer or glow. It sees. You can feel its attention on you, dissecting you, knowing you.
+
+But you're not alone.
+
+Someone else is here.
+
+A figure steps from the shadows—hooded, wrapped in darkness. When they speak, their voice is wrong. Multiple voices layered, harmonizing in impossible ways.
+
+"Another seeker," they say. "Come to bind the Eye. To know truth."
+
+"Who are you?"
+
+They laugh. "I am what you will become. One who walked your path. One who bound too many."
+
+They lower their hood. Their face is... wrong. Features shifting, multiple expressions overlapping. They've bound so many vestiges that they're no longer one person. They're a collective.
+
+"The Eye will show you what you are. What you will be. Most cannot bear it." They gesture. "But please. Try. I would like company here. In this place of truth."`,
+                choices: [
+                    { text: "Bind the Watcher's Eye despite the warning.", action: "bind_watcher" },
+                    { text: "Talk to this... person. Understand what happened.", action: "talk_collective" },
+                    { text: "Attack. Put them out of their misery.", action: "attack_collective" },
+                    { text: "Leave. This is too dangerous.", action: "flee_sanctum" }
+                ]
+            },
+
+            talk_collective: {
+                location: "Sanctum of the Watcher",
+                text: `"What's your name?" you ask.
+
+The shifting faces cycle through expressions—sad, amused, angry, serene. "Names. We had names once. Mara. Victus. Celene. Others. Now we are the Convergence."
+
+"How many vestiges?"
+
+"Twelve. No. Thirteen. We forget sometimes. They speak so loudly." The Convergence sits, gesturing for you to do the same. "You have... two? Three? Still yourself, mostly. Treasure that."
+
+"Can it be undone? The corruption?"
+
+"No." Absolute certainty. "Magic demands payment. Power has price. We knew this. We chose power. Every time, we chose power." Their many-voices harmonize into something like song. "Was it worth it? We debate this. Constantly. Mara says no. Victus says yes. Celene weeps."
+
+"Then why stay here?"
+
+"Where else? We are too dangerous for the world. The Order would hunt us. Other mages would fear us. Here, in this place of truth, we can simply... be. Many, but one. Lost, but found."
+
+They look at you with a dozen eyes that aren't quite in the same place.
+
+"You are kind, to speak with us. Most run. Or attack. You listen. We appreciate this."`,
+                choices: [
+                    { text: "Ask if they'll let you take the Eye.", action: "ask_for_eye" },
+                    { text: "Offer to end their suffering. Mercifully.", action: "mercy_collective" },
+                    { text: "Suggest they could still live. Find purpose.", action: "hope_collective" }
+                ]
+            },
+
+            hope_collective: {
+                location: "Sanctum of the Watcher",
+                text: `"You don't have to hide," you say. "You could help people. Use your power for something."
+
+The Convergence's many faces smile. It's heartbreaking.
+
+"Sweet child. We are beyond help. Beyond redemption." But there's no bitterness in their multi-voice. Just acceptance. "The vestiges we carry... some were tyrants. Some were saints. Some were simply lost. They war within us constantly. We cannot trust ourselves with power anymore."
+
+"But—"
+
+"No." They stand. "But your kindness... it matters. Thank you for seeing us as someone, not something. For that gift, we offer you this:"
+
+They approach the Watcher's Eye, speak words in a language that hurts to hear, and the vestige dims slightly.
+
+"We have... tempered it. The Eye will show you truth, but not crush you with it. This is our gift. Take it. Know yourself. But please..." Their voices crack with emotion. "Please do not become us."
+
+They fade back into the shadows, leaving you alone with the Eye.`,
+                choices: [
+                    { text: "Bind the Watcher's Eye.", action: "bind_watcher_tempered" },
+                    { text: "Thank them and leave without binding it.", action: "leave_sanctum_peace" }
+                ],
+                effects: { kaelRespect: 5, corruption: -5, flag: "shownKindness" }
+            },
+
+            bind_watcher_tempered: {
+                location: "Sanctum of the Watcher",
+                text: `You reach for the Eye. It unfolds like a flower, like a star, like something geometry cannot contain.
+
+Then it enters you.
+
+And you SEE.
+
+You see yourself: every choice, every corruption, every moment you chose power over principle or principle over power. You see the threads of fate connecting you to Kael, to the Convergence, to every life you've touched.
+
+You see what you could become: a monster, mindless with power. Or a martyr, dead for principles. Or something else—someone who walks the knife's edge between power and humanity.
+
+The visions fade. You're on your knees, gasping. The Eye is bound.
+
+But because the Convergence tempered it, you're still yourself. Changed, but not broken. You understand now: corruption is inevitable, but what matters is how you use the time before it takes you.`,
+                choices: [
+                    { text: "Leave the Sanctum.", action: "leave_sanctum_changed" }
+                ],
+                effects: { vestige: "watcher", corruption: 8, essence: 25, flag: "bound_watcher" }
+            },
+
+            leave_sanctum_peace: {
+                location: "Sanctum of the Watcher",
+                text: `"No," you say softly. "I won't bind it. I've seen what happens when people like us chase power too far."
+
+The Convergence emerges from shadow. Their faces are crying. Multiple tears from impossible angles.
+
+"You... refuse?"
+
+"Yes."
+
+"Why?"
+
+"Because someone showed me what I could become. And I'd rather die human than live as something else."
+
+The Convergence embraces you. It feels like being hugged by a dozen people at once—warm and cold, desperate and gentle.
+
+"Thank you," they whisper in harmony. "Thank you for learning from our mistake."
+
+When you leave the Sanctum, the ash-choked air somehow feels cleaner. You're weaker than you could have been. But you're more yourself than you've been in weeks.`,
+                choices: [
+                    { text: "Descend the mountain.", action: "descend_cinderpeak" }
+                ],
+                effects: { corruption: -10, flag: "refusedWatcher" }
+            },
+
+            bind_watcher: {
+                location: "Sanctum of the Watcher",
+                text: `You ignore the Convergence's warning and reach for the Eye.
+
+It opens. And you SEE.
+
+Every sin. Every weakness. Every lie you've told yourself. You see the Academy burning and know you could have saved more people but chose to flee. You see the villager in Mirewood and know whether you saved or damned them. You see Kael and know exactly how many lies you've told her, or how many truths.
+
+You see yourself: a frightened child playing with forces beyond comprehension, pretending competence, drowning in power you can't control.
+
+You see your future: multiple paths, all ending in either death or transformation into something inhuman.
+
+The Eye doesn't judge. It simply shows. But the truth is its own kind of violence.
+
+When the visions fade, you're changed. More powerful. More corrupted. More aware of exactly what you're becoming.
+
+The Convergence watches sadly. "Now you know," they say. "Was it worth it?"
+
+You don't have an answer.`,
+                choices: [
+                    { text: "Leave the Sanctum.", action: "leave_sanctum_changed" }
+                ],
+                effects: { vestige: "watcher", corruption: 15, essence: 25, flag: "bound_watcher" }
+            },
+
+            leave_sanctum_changed: {
+                location: "Cinderpeak Descent",
+                text: `You descend the mountain changed. The Eye shows you things now—hidden paths, dangerous creatures before they attack, the truth beneath people's words.
+
+But it also shows you your own corruption spreading. You can see it like a disease, beautiful and terrible, remaking you cell by cell.
+
+Halfway down, you're ambushed again. But this time, you see it coming.
+
+Three Order knights, led by someone in captain's armor. They've been tracking you.
+
+The captain removes their helmet.
+
+It's Kael.
+
+"I'm sorry," she says, and you can hear that she means it. "I reported to my superiors. They ordered me to bring you in. I tried to argue, but..." She draws her sword. "I'm sorry, Ren."
+
+The other knights spread out, cutting off escape.
+
+This is it. The confrontation you've been avoiding.`,
+                choices: [
+                    { text: "Fight. You're not going to die here.", action: "combat_kael_final" },
+                    { text: "Surrender. Let her take you in.", action: "surrender_kael" },
+                    { text: "Try to talk her down. Remind her of your conversations.", action: "persuade_kael" },
+                    { text: "Use the Eye's power to reveal truth. Show her what the Order really is.", action: "reveal_truth_kael" }
+                ]
+            },
+
+            descend_cinderpeak: {
+                location: "Cinderpeak Descent",
+                text: `You descend carefully, mindful of the treacherous path. The ash is thinner here, and you can see the foothills spreading below.
+
+Then you hear steel on stone.
+
+Order knights. Four of them, in formation, climbing toward you. You're trapped between them and the volcanic heights.
+
+The lead knight calls out: "Mage! You are under arrest by order of the Ashen King! Surrender your vestiges and submit to cleansing!"
+
+Behind them, you spot a fifth figure hanging back. Gray cloak. Distinctive stance.
+
+Kael.
+
+She sees you see her. Her expression is conflicted, pained. But she doesn't intervene.`,
+                choices: [
+                    { text: "Fight the knights.", action: "combat_order_knights" },
+                    { text: "Try to escape up the mountain.", action: "escape_up_mountain" },
+                    { text: "Call out to Kael. Ask for help.", action: "call_kael_help" },
+                    { text: "Surrender peacefully.", action: "surrender_knights" }
+                ]
+            },
+
+            call_kael_help: {
+                location: "Cinderpeak Descent",
+                text: `"Kael!" you shout. "Please!"
+
+The knights pause, confused. They look back at her.
+
+She steps forward, hand on her sword. For a terrible moment, you think she's going to join them.
+
+Then she speaks: "This one is my responsibility. I've been tracking them. I'll handle the arrest."
+
+The lead knight frowns. "Our orders are to—"
+
+"I outrank you, Knight-Corporal. This is my hunt. Return to the fortress."
+
+There's a tense moment. Then the knights bow and withdraw, leaving you alone with Kael.
+
+When they're gone, she sheathes her sword.
+
+"Run," she says quietly. "North, toward the Ashwood. I'll report that you escaped. I can't keep covering for you, but... I can give you this."
+
+"Why?"
+
+"Because I've killed seventeen mages, and I'm tired of killing people who might have been something else." She meets your eyes. "Don't make me regret this. Don't become what they think you are."
+
+She turns and walks back toward the fortress. Giving you time. Giving you a chance.`,
+                choices: [
+                    { text: "Thank her and flee north.", action: "flee_to_ashwood" },
+                    { text: "Follow her. Try to continue traveling together.", action: "follow_kael_fortress" }
+                ],
+                effects: { kaelTrust: 12, kaelRespect: 8, flag: "kaelSaved" }
+            },
+
+            combat_order_knights: {
+                location: "Cinderpeak Descent",
+                combat: true,
+                enemy: "hollowKnight",
+                text: `The knights charge in formation. Professional, coordinated, deadly.
+
+You need to survive this.`,
+                onVictory: "defeat_order_knights",
+                onDefeat: "death_order_knights"
+            },
+
+            defeat_order_knights: {
+                location: "Cinderpeak Descent",
+                text: `The last knight falls. You're standing over four bodies, breathing hard, covered in blood and ash.
+
+Kael hasn't moved. She's watching you with an expression you can't read.
+
+"You killed them," she says.
+
+"They were trying to kill me."
+
+"They were following orders. They had families. They believed they were protecting people."
+
+"And I'm trying to survive."
+
+She's quiet for a long time. Then: "This is what I was afraid of. That survival would turn you into exactly what they believed you were."
+
+"What else was I supposed to do?"
+
+"I don't know." She sounds tired. Ancient. "But now I have to report this. Four knights dead by a mage's hand. The Order will send everyone. There's no covering this up."
+
+"Then come with me. Leave the Order."
+
+She laughs bitterly. "And become what? A rogue knight? They'd hunt me alongside you."
+
+"At least we'd be honest about what we are."
+
+She looks at the bodies. At you. At her sword.
+
+"I need to think," she says finally. "Go. I'll give you a day's head start. After that..." She doesn't finish.
+
+You flee north, leaving her standing among the bodies, the weight of impossible choices on her shoulders.`,
+                choices: [
+                    { text: "Head to the Ashwood.", action: "ashwood_arrival" }
+                ],
+                effects: { corruption: 10, essence: 30, kaelTrust: -5, flag: "killedKnights" }
+            },
+
+            persuade_kael: {
+                location: "Cinderpeak Descent",
+                text: `"Kael, listen to me," you say, keeping your hands visible. "Remember what we talked about. About desperate people, about choices, about whether every mage is really a monster."
+
+"I remember."
+
+"Then you know I'm not what they think I am."
+
+"You've bound vestiges. Killed those who stood in your way. The corruption is spreading through you—I can see it from here." Her voice cracks. "You're proving them right."
+
+"Or I'm proving that people can carry corruption and still choose to be human. That power doesn't have to mean monstrosity." You take a step closer. The other knights tense, but Kael raises a hand, stopping them. "You said yourself that I'm different. That I'm honest about what I'm becoming. That has to count for something."
+
+She's silent, warring with herself.
+
+"What are you doing, Captain?" one of the knights asks nervously.
+
+"Shut up." She doesn't look at him. Only at you. "If I let you go, you have to promise me something."
+
+"What?"
+
+"That you won't bind any more vestiges. That you'll find a way to stabilize what you have instead of seeking more power. Can you promise me that?"
+
+The question hangs in the ashen air. Can you? Should you?`,
+                choices: [
+                    { text: "Promise. You'll find another way.", action: "promise_kael" },
+                    { text: "Be honest. You can't promise that.", action: "refuse_promise_kael" },
+                    { text: "Lie. Say whatever she needs to hear.", action: "lie_to_kael" }
+                ]
+            },
+
+            promise_kael: {
+                location: "Cinderpeak Descent",
+                text: `"I promise," you say. And you mean it.
+
+Kael searches your face. With the Eye's power, you can see her internal struggle—duty versus conscience, orders versus truth. You see her decide.
+
+"Knights," she says. "Return to the fortress. Report that the mage escaped using illusion magic. I'm pursuing on my own."
+
+"But Captain—"
+
+"That's an order."
+
+They reluctantly retreat. When they're gone, Kael approaches. She's close enough now that you could touch her.
+
+"I'm betraying everything I am for you," she says quietly. "Don't make me regret it."
+
+"I won't."
+
+"If you break that promise—if I hear that you've bound more vestiges, hurt innocents, lost yourself to the corruption—I will hunt you down. And I will kill you. No more mercy. No more chances."
+
+"I understand."
+
+She reaches out, hesitates, then puts a hand on your shoulder. "Then go. Find your stability. Find your way to be human with power. And if you succeed..." Something vulnerable flashes in her eyes. "Maybe there's hope for people like us."
+
+She turns and walks away, leaving you free.`,
+                choices: [
+                    { text: "Head to the Ashwood.", action: "ashwood_arrival" }
+                ],
+                effects: { kaelTrust: 15, kaelRespect: 10, flag: "promisedKael", corruption: -5 }
+            },
+
+            refuse_promise_kael: {
+                location: "Cinderpeak Descent",
+                text: `"I can't," you say honestly. "I don't know what I'm going to need to survive. What enemies I'll face. I won't lie to you."
+
+Kael's face hardens. "Then you're choosing power over everything else."
+
+"I'm choosing honesty over comfortable lies. You deserved better than a promise I can't keep."
+
+She raises her sword. The other knights ready themselves.
+
+But she doesn't attack. Not yet.
+
+"You're impossible," she says, and there's almost admiration in her voice. "Even now, even here, you're honest. You could have lied. I might have believed you."
+
+"Would you have respected me for it?"
+
+"No." She lowers her sword slightly. "Knights—stand down."
+
+"Captain?"
+
+"I said stand down!" She's breathing hard, angry at herself, at you, at the whole situation. "This mage... is my responsibility. I'll track them. When the time is right, I'll end them. But that time is not today."
+
+The knights reluctantly obey. Kael looks at you one last time.
+
+"Run. But know that I'm coming. Eventually. And when we meet again..." She doesn't finish. Doesn't need to.
+
+You run, carrying her respect and her promise of future violence. Somehow, it feels more honest than a comfortable lie ever would.`,
+                choices: [
+                    { text: "Head to the Ashwood.", action: "ashwood_arrival" }
+                ],
+                effects: { kaelTrust: 10, kaelRespect: 12, flag: "honestWithKael" }
+            },
+
+            lie_to_kael: {
+                location: "Cinderpeak Descent",
+                text: `"I promise," you say.
+
+It's a lie. You both know it.
+
+The Eye shows you Kael's reaction—the flicker of disappointment, the resignation, the way her hand tightens on her sword. She knows you're lying. And she hates that you think she'd fall for it.
+
+"Fine," she says coldly. "Knights—let them go."
+
+"Captain?"
+
+"Do it."
+
+They withdraw. But the warmth that was building between you and Kael is gone. You've broken something that can't be easily repaired.
+
+"Run," she says. "Next time, I won't ask for promises. I'll just do what I should have done today."
+
+You flee, carrying the weight of a betrayed trust. The Eye shows you the path you've chosen—one where convenience matters more than honesty.
+
+The corruption spreads a little faster.`,
+                choices: [
+                    { text: "Head to the Ashwood.", action: "ashwood_arrival" }
+                ],
+                effects: { kaelTrust: -5, kaelRespect: -8, corruption: 8, flag: "liedToKael" }
+            },
+
+            reveal_truth_kael: {
+                location: "Cinderpeak Descent",
+                text: `You activate the Watcher's Eye. Power floods through you—painful, clarifying.
+
+"Kael," you say, and your voice echoes with unnatural resonance. "Look. Really look."
+
+The Eye projects visions into the air between you—memories, truths, things the Order has hidden. You show her:
+
+The Ashen King isn't a righteous god. He's a vestige himself—the most powerful, most corrupt, consuming the essence of every mage the Order kills. The "cleansing" is just feeding him.
+
+The Order knights aren't protecting people. They're harvesters, gathering power for a hollow god.
+
+Kael herself has been fed lies her entire life. The mage who destroyed her village? He was running from the Order. They drove him to madness, then used the tragedy to recruit a child soldier.
+
+The visions fade. Kael is on her knees, tears streaming down her face.
+
+"No," she whispers. "No, that's... that's not..."
+
+"I'm sorry," you say. And you are. The truth is a weapon, and you just used it to break someone you care about.
+
+The other knights are backing away, terrified. One runs.
+
+Kael looks up at you with devastated eyes. "You... you took everything from me. My purpose. My certainty. Everything I've killed for was a lie?"
+
+"Not everything. You protected people. That part was real."
+
+"How do I..." She can't finish. Can't process.
+
+You've freed her from the Order's lies. But you've also destroyed the foundation her entire identity was built on.`,
+                choices: [
+                    { text: "Stay with her. Help her process this.", action: "comfort_broken_kael" },
+                    { text: "Leave. She needs time alone.", action: "leave_broken_kael" },
+                    { text: "Offer her a new purpose. Come with you.", action: "recruit_kael" }
+                ],
+                effects: { kaelTrust: -10, kaelRespect: 5, corruption: 5, flag: "brokeKael" }
+            },
+
+            comfort_broken_kael: {
+                location: "Cinderpeak Descent",
+                text: `You kneel beside her, slowly, letting her see the movement. She doesn't react.
+
+"Kael," you say softly. "I know this is—"
+
+"Don't." Her voice is hollow. "Don't tell me you understand. Don't tell me it will be okay. I've killed people for a lie. Good people, maybe. Desperate people. I've been a weapon for a monster."
+
+"You didn't know."
+
+"Does that matter? They're still dead. By my hand."
+
+You sit in silence for a long time. The other knights have fled. It's just the two of you in the ash and blood.
+
+Finally, Kael speaks: "What do I do now?"
+
+"I don't know. But... you don't have to decide today. You can just... exist. Process. Figure out who you are without the Order."
+
+"And if I'm nothing without them?"
+
+"Then you build something new. That's what I'm doing."
+
+She looks at you with red-rimmed eyes. "You destroyed my world."
+
+"I showed you the truth. Your world was already destroyed. You just didn't know it yet."
+
+She almost laughs. It's a broken sound. "I should hate you."
+
+"Maybe you do."
+
+"I don't. That's the worst part. I should hate you, but I..." She stops. Doesn't finish.
+
+You wait.
+
+"Come with me," she says finally. "If everything I believed is a lie, maybe... maybe the lies about mages are too. Help me understand. Help me see what's real."
+
+It's not love. Not yet. But it's something—a connection forged in shared destruction, shared uncertainty, shared hope that something better is possible.`,
+                choices: [
+                    { text: "Accept. Travel together.", action: "kael_joins_party" }
+                ],
+                effects: { kaelTrust: 15, kaelRespect: 8, flag: "kaelJoined", corruption: -3 }
+            },
+
+            kael_joins_party: {
+                location: "The Road to Ashwood",
+                text: `You travel together through the ashen wastes. Kael is quiet, processing, rebuilding herself from fragments.
+
+On the third day, she speaks: "Teach me about vestiges."
+
+"Why?"
+
+"Because if I'm going to understand this world, I need to understand what I've been killing." She touches her sword. "And because... maybe I can help. Keep you human. Be the anchor you need."
+
+Over the following days, she learns. You show her how vestiges aren't evil—just powerful and dangerous, like any tool. She shows you sword forms, discipline, the value of physical strength alongside magic.
+
+Slowly, something develops. Not romance—it's too early, too complicated. But partnership. Trust. The understanding that you're both outcasts now, and maybe that means you can build something new together.
+
+One night, camped under stars obscured by ash, she says: "I was taught to hunt monsters. But you're not a monster. You're just... trying to survive in a world that wants you dead."
+
+"Isn't that what monsters are? People the world wants dead?"
+
+"Maybe." She's quiet. Then: "Or maybe monsters are the people who stop seeing others as human. And by that definition, I was the monster. Not you."
+
+"You're not—"
+
+"I killed people who were like you. Scared. Alone. Doing what they had to." She looks at her hands. "How do I atone for that?"
+
+"By choosing better from now on. That's all any of us can do."
+
+She nods. And in the firelight, you see her smile. Small, but real.
+
+"Thank you," she says. "For destroying my comfortable lies. I hated you for it. But I think... I think you saved me."
+
+"We saved each other."
+
+"Yes." She meets your eyes. "We did."`,
+                choices: [
+                    { text: "Continue to the Ashwood together.", action: "ashwood_with_kael" }
+                ],
+                effects: { kaelTrust: 20, kaelRespect: 15 }
+            },
+
+            ashwood_arrival: {
+                location: "The Ashwood",
+                text: `The Ashwood is dying. The trees are black and skeletal, their leaves long since fallen. The ground is gray dust that rises in small clouds with each step.
+
+This is the place where the Ashen King's influence is strongest. Where the veil between worlds is thinnest. Where the most powerful vestiges can be found—and where the corruption spreads fastest.
+
+You've come here following rumors of the Tyrant's Crown—a vestige of immense power. Control over minds, domination of wills. Exactly the kind of power that could help you survive. Exactly the kind of power that could destroy what's left of your humanity.
+
+The forest watches with dead eyes. Things move in the shadows—corrupted creatures, hollow spirits, and worse things that have no names.
+
+You find the Crown at the center of a clearing ringed with ancient standing stones. It hovers, spectral and terrible, radiating authority and menace.
+
+But you're not alone.
+
+A figure stands before the Crown. Tall, wrapped in tattered robes that were once regal. When they turn, you see a face that's half-human, half-something else. Their eyes burn with cold fire.
+
+"The Crown," they say, voice resonating with power, "is mine. I've sought it for months. Killed for it. I will not let some child take what is mine."
+
+They raise a hand, and you feel the weight of magical pressure. This is a mage far more powerful than you. Far more corrupt. Perhaps what you'll become if you keep walking this path.
+
+"Leave," they command. "Or die."`,
+                choices: [
+                    { text: "Fight for the Crown.", action: "combat_corrupted_mage" },
+                    { text: "Offer to share it. You both could bind pieces.", action: "negotiate_crown" },
+                    { text: "Let them have it. This power isn't worth it.", action: "yield_crown" },
+                    { text: "Try to trap them. The Crown will corrupt them further.", action: "trap_mage" }
+                ]
+            },
+
+            ashwood_with_kael: {
+                location: "The Ashwood",
+                text: `You enter the Ashwood together. Kael's hand stays near her sword as she surveys the dead forest.
+
+"This place feels wrong," she says.
+
+"It is wrong. The Ashen King's power is strongest here."
+
+"The being I served." Bitterness in her voice. "How many places has he ruined?"
+
+"Too many."
+
+You find the Crown quickly—Kael's training makes her good at tracking magical artifacts. It hovers in the clearing, terrible and tempting.
+
+But before you can approach, a voice calls out: "Kael. I thought I might find you here."
+
+A woman emerges from the dead trees. Order armor. Captain's insignia. She's older than Kael, scarred, with the bearing of someone who's survived a hundred battles.
+
+"Commander Ashera," Kael says, hand moving to her sword.
+
+"You've been declared traitor," Ashera says calmly. "Protecting a mage. Abandoning your post. The Order wants you dead almost as much as they want your pet mage."
+
+"I'm not her pet," you say.
+
+Ashera ignores you. "Come back, Kael. Say you were corrupted, influenced by magic. They'll cleanse you instead of killing you. It's not too late."
+
+"Yes it is," Kael says. "I've seen the truth, Ashera. The Order serves a monster."
+
+"The Order serves humanity."
+
+"The Order serves the Ashen King. A vestige. We're feeding him power with every mage we kill."
+
+Ashera's expression doesn't change. "I know."
+
+Silence.
+
+"You... know?" Kael's voice is small.
+
+"Of course. The senior commanders all know. The Ashen King is corrupt power, yes. But he's OUR corrupt power. Better one monster we control than a thousand we don't." She draws her sword. "Now. Will you come peacefully, or do I kill you both?"`,
+                choices: [
+                    { text: "Fight together with Kael.", action: "combat_ashera_duo" },
+                    { text: "Surrender. Try to reason with her.", action: "surrender_ashera" },
+                    { text: "Use the Crown. Take its power to win.", action: "emergency_bind_crown" },
+                    { text: "Tell Kael to run. You'll hold Ashera off.", action: "sacrifice_for_kael" }
+                ]
+            },
+
+            combat_ashera_duo: {
+                location: "The Ashwood Clearing",
+                combat: true,
+                enemy: "ashera",
+                text: `Ashera is legendary. She's trained two generations of Order knights, survived the War of Dying Gods, and never lost a duel.
+
+But there are two of you. Magic and steel. Outcast and traitor. Partners.
+
+"Together," Kael says, falling into stance beside you.
+
+"Together," you agree.
+
+Ashera smiles. "Good. I'd hate for this to be easy."
+
+She attacks like a storm.`,
+                onVictory: "defeat_ashera",
+                onDefeat: "death_ashera"
+            },
+
+            death_ashera: {
+                location: "The Ashwood Clearing",
+                text: `Commander Ashera is a force of nature. Her blade moves with the weight of decades of experience. Kael fights with passion, you with power, but Ashera fights with cold, hard certainty.
+
+She disarms Kael, then turns to you. There is no malice in her eyes, only duty.
+
+"It didn't have to be this way," she says, and her blade ends your story.`,
+                final: true
+            },
+
+            defeat_ashera: {
+                location: "The Ashwood Clearing",
+                text: `Ashera falls to one knee, bleeding from a dozen wounds. Her sword has fallen from her grasp.
+
+"Impressive," she says, coughing blood. "Together, you're... something new."
+
+Kael approaches her former commander, sword ready.
+
+"Do it," Ashera says. "I failed. That's the Order way."
+
+But Kael hesitates. "You trained me. Raised me. You were..."
+
+"I was what the Order made me. Just like you were. The difference is you broke free." Ashera looks at you. "Protect her. Whatever you two are becoming, whatever you're trying to do... protect her. She's better than the rest of us."
+
+Then she slumps. Not dead, but unconscious.
+
+"We should go," you say. "Before more knights come."
+
+"The Crown," Kael says. "If the Order is sending their best, we need more power."
+
+"Or we need to stop seeking power and focus on surviving."
+
+She looks at the hovering Crown, then at you, then at her fallen mentor.
+
+"You choose," she says. "I'll follow your lead. Whatever you decide."`,
+                choices: [
+                    { text: "Bind the Crown. You need the power.", action: "bind_crown_with_kael" },
+                    { text: "Leave it. You have enough.", action: "leave_crown_with_kael" }
+                ],
+                effects: { essence: 40 }
+            },
+
+            bind_crown_with_kael: {
+                location: "The Ashwood Clearing",
+                text: `You approach the Crown. Power radiates from it—authority, dominion, the ability to bend wills and break minds.
+
+"Are you sure?" Kael asks.
+
+"No. But when am I ever?"
+
+You reach for it.
+
+The Crown descends onto your head. For a moment, you feel like a god—all-powerful, unlimited, absolute. You could make anyone do anything. Armies would kneel. Kingdoms would bow.
+
+Then Kael's hand is on your shoulder. Her touch is an anchor, pulling you back.
+
+"Stay with me," she says. "Don't lose yourself. Look at me. Stay."
+
+You focus on her. Her gray eyes. Her scar. Her hand, warm and real. The power settles instead of consuming.
+
+When the binding completes, you're changed. More powerful, yes. More corrupted, yes. But still yourself. Because she held on.
+
+"Thank you," you whisper.
+
+"Always," she says.
+
+The Crown whispers of possibilities—of dominating the Order, of freeing all mages, of remaking the world. But for now, you resist. For now, you have a partner who keeps you human.
+
+For now, that's enough.`,
+                choices: [
+                    { text: "Leave the Ashwood together.", action: "leave_ashwood_duo" }
+                ],
+                effects: { vestige: "tyrant", corruption: 15, kaelTrust: 20 }
+            },
+
+            leave_crown_with_kael: {
+                location: "The Ashwood Clearing",
+                text: `You turn away from the Crown.
+
+"No," you say. "We have enough. More than enough."
+
+Kael exhales, relieved. "Good. I was hoping you'd say that."
+
+"You think I'm making a mistake?"
+
+"I think you're making the hardest choice. Which usually means it's the right one." She helps you away from the clearing. "Power is easy. Restraint is hard."
+
+As you leave, the Crown pulses once—disappointed, or perhaps relieved. Maybe even artifacts can grow tired of corrupting people.
+
+You and Kael walk out of the Ashwood together. Weaker than you could have been. But more human than you might have remained.
+
+"What now?" she asks.
+
+"I don't know. Run, I guess. Survive. Figure out how to exist in a world that wants us dead."
+
+"Sounds difficult."
+
+"Terribly."
+
+"Good." She almost smiles. "I prefer things that are worth fighting for."
+
+You travel north, leaving the corrupted forest behind. Ahead: uncertainty, danger, the constant threat of the Order. But also: companionship, partnership, the slim possibility of finding a different way.
+
+Together, you might just survive this.`,
+                choices: [
+                    { text: "Continue to the Sanctuary.", action: "sanctuary_approach" }
+                ],
+                effects: { corruption: -10, kaelTrust: 25, kaelRespect: 20 }
+            },
+
+            sanctuary_approach: {
+                location: "The Wandering Sanctuary",
+                text: `The Sanctuary isn't a place—it's a legend. A mobile haven for outcasts, rogues, and people caught between worlds. Run by someone known only as the Curator, it offers safety to those hunted by both the Order and corrupted mages.
+
+Finding it takes weeks. Following whispered rumors, coded messages, trails that vanish and reappear. But eventually, you do.
+
+It's hidden in a fold of reality—a space that exists between moments, accessible only to those who know how to step sideways through time. When you finally enter, you find:
+
+A vast library filled with forbidden knowledge. A garden that grows in impossible colors. Rooms that shift and change based on their occupants' needs. And people—dozens of them. Mages who've resisted corruption. Former Order knights who questioned. Scholars seeking truth.
+
+The Curator meets you in the central hall. They're old beyond measure, their body more vestige than human. But their eyes are kind.
+
+"Welcome," they say. "You've both come a long way. The mage who seeks balance. The knight who seeks redemption." They gesture. "You'll find safety here. For a time. But nothing lasts forever. Eventually, you'll need to choose."
+
+"Choose what?" Kael asks.
+
+"What kind of world you want to create. The Order would have all mages dead. The Ashen King would consume all magic. And the corrupted mages would burn everything in their quest for power. Someone needs to offer a fourth path."
+
+The Curator looks at you both. "Perhaps that's you. The partnership of magic and steel, power and restraint, outcasts who refuse to become monsters."
+
+"And if we fail?" you ask.
+
+"Then the world ends. One way or another." They smile. "But I don't think you'll fail. You've already done the hardest part: you've chosen each other over power. Everything else flows from that."`,
+                choices: [
+                    { text: "Accept the Curator's offer. Stay and learn.", action: "sanctuary_ending_hope" },
+                    { text: "Leave. You have work to do in the world.", action: "sanctuary_ending_action" },
+                    { text: "Ask about the Ashen King. How to defeat him.", action: "sanctuary_ending_rebellion" }
+                ]
+            },
+
+            sanctuary_ending_hope: {
+                location: "The Wandering Sanctuary",
+                text: `You stay at the Sanctuary. For months, you study with the Curator and others who've walked your path. You learn techniques to stabilize corruption, to bind vestiges without losing yourself, to use power responsibly.
+
+Kael trains with former Order knights who defected, learning their stories, helping them process their guilt. She becomes a teacher herself—showing younger outcasts how to fight without becoming what they hate.
+
+One evening, you find her in the garden. She's practicing forms, moving through sword stances with fluid grace. You watch for a moment, content.
+
+She notices you and stops. "How long have you been there?"
+
+"Long enough to be impressed."
+
+She sheathes her sword and walks over. You're standing close now. Closer than strictly necessary. It's been months, and something has been building between you—subtle, uncertain, but undeniable.
+
+"Ren," she says quietly. "When I first met you, I was supposed to kill you. Now I can't imagine existing without you."
+
+"Is that the corruption talking?"
+
+"No." She touches your face. "It's me. Just me. Choosing you."
+
+You lean into her touch. "I choose you too. Have been choosing you, every day, without realizing it."
+
+"Then choose me now. Consciously. Stay here. Build something with me. Not a romance born of desperation, but a partnership built on choice."
+
+You kiss her. It's gentle, tentative, real. When you break apart, you're both smiling.
+
+"Together," you say. "We build something together."
+
+Over the following years, the Sanctuary grows. More outcasts arrive—mages fleeing the Order, knights questioning their purpose, scholars seeking forbidden truths. You and Kael become its protectors, its teachers, proof that magic and discipline can coexist.
+
+Your corruption stabilizes. You learn to live with the vestiges you carry without binding more. They become part of you—not masters, but aspects. Tools you control instead of forces that control you.
+
+Kael finds peace with her past. She reaches out to other former Order knights, offering them refuge, redemption, purpose. Some come. Some don't. But she tries, and that's enough.
+
+The Order continues its hunt. The Ashen King continues his consumption. The world continues turning toward darkness.
+
+But in the Sanctuary, there is light. There is hope. There is proof that another way is possible.
+
+And on quiet nights, when you and Kael sit together in the garden, watching impossible stars wheel overhead, you think: maybe you didn't save the world. But you saved each other. You built something good in a place of darkness.
+
+That has to count for something.
+
+That has to be enough.
+
+**ENDING: THE SANCTUARY**
+*You found balance. Partnership. A place between power and humanity. The war continues, but you've created an island of hope in a sea of corruption. Together, you are neither saint nor monster—just two people choosing each other, every day, against a world that demands absolute answers.*`,
+                final: true,
+                effects: { ending: "sanctuary" }
+            },
+
+            sanctuary_ending_action: {
+                location: "The Wandering Sanctuary",
+                text: `"We can't stay," you say. "There are people out there who need help. Mages being hunted. Knights questioning. If we hide here, we're abandoning them."
+
+The Curator nods. "I hoped you'd say that. The Sanctuary will always be here when you need it. But yes—the world needs people willing to walk in it, not just hide from it."
+
+Kael agrees. "We can make a difference. Not by conquering or destroying, but by showing there's another path."
+
+You leave the Sanctuary armed with knowledge, stabilized power, and each other. You travel the lands, seeking out hunted mages and offering them alternatives to corruption. You find questioning knights and show them the truth about the Order. You build a network—quiet, careful, growing.
+
+It's dangerous work. You're hunted by the Order, by the Ashen King's servants, by corrupted mages who see you as traitors to power. You fight. You run. You survive.
+
+And slowly, impossibly, you make a difference.
+
+Mages start seeking you out, asking how to resist corruption. Knights start defecting, joining your cause. The whispers spread: there are two outcasts who proved another way is possible.
+
+Years pass. Your hair grays. Scars accumulate. The corruption ebbs and flows but never consumes you because Kael is always there, keeping you grounded.
+
+One night, camped in ruins, she says: "Do you regret it? Choosing this life instead of safety?"
+
+"Never. Do you?"
+
+"Every day." She smiles. "And I'd choose it again every time."
+
+You kiss her, surrounded by darkness, hunted by armies, carrying the weight of impossible hope.
+
+"We're idiots," you say.
+
+"Absolutely," she agrees. "But we're idiots together."
+
+The war isn't won. The Ashen King still reigns. The Order still hunts. But you've planted seeds of resistance, proof that power and humanity can coexist.
+
+It will have to be enough.
+
+**ENDING: THE RESISTANCE**
+*You chose action over safety. Together, you became legends—the mage who resisted corruption and the knight who questioned. You didn't defeat the darkness, but you lit candles against it. And sometimes, that's the bravest thing of all.*`,
+                final: true,
+                effects: { ending: "resistance" }
+            },
+
+            sanctuary_ending_rebellion: {
+                location: "The Wandering Sanctuary",
+                text: `"Tell me about the Ashen King," you say. "How do we kill a god?"
+
+The Curator's expression grows grave. "You don't kill gods. You unmake them. Sever their connection to power, dissolve their essence back into the void."
+
+"How?"
+
+"The King feeds on the essence of slain mages. Every vestige the Order destroys feeds him. To unmake him, you'd need to either starve him—stop all mage killings—or poison him with corrupted essence so toxic even he cannot consume it."
+
+"The second option," Kael says. "It's the only realistic one. We can't stop the Order's hunts."
+
+"It would require you to bind vestiges until you're saturated with corruption. Become so toxic that when the King tries to consume you, it destroys him from within." The Curator meets your eyes. "You'd be sacrificing yourself. Becoming the very monster you've fought against."
+
+"But it would end him?"
+
+"Possibly. Or it might just create a new Ashen King. Power abhors a vacuum."
+
+Kael grabs your arm. "No. We're not doing this. There has to be another way."
+
+"Is there?" You look at her. "How many mages will die while we search for a perfect solution? How many will the Order murder in his name?"
+
+"You're talking about suicide."
+
+"I'm talking about making my corruption mean something. Using what's already killing me to kill him first."
+
+She's crying now, angry tears. "I refuse. I didn't save you, didn't choose you, didn't build this with you just to watch you throw yourself away."
+
+"Then come with me. Bind vestiges too. We'll be toxic together. End him together."
+
+"That's insane."
+
+"It's the only way to win."
+
+The Curator watches silently. This is your choice, your burden.
+
+Kael is silent for a long time. Then: "If we do this—if we're really this stupid—we do it right. We bind carefully. We resist as long as we can. We make sure the Order is there to witness. Let our deaths mean something."
+
+"You're agreeing?"
+
+"I'm refusing to let you die alone." She takes your hand. "Together, remember? Even into death."
+
+Over the following months, you prepare. You bind more vestiges—carefully, strategically, poisoning yourselves with controlled corruption. The Martyr's Tears. The Vagrant's Breath. The Oracle's madness. Each one brings you closer to the edge.
+
+Kael binds them too, learning magic for the first time, letting the corruption into her perfect discipline. You watch each other deteriorate, holding on to humanity through sheer force of will and love.
+
+Finally, when you're both so saturated with toxic power that reality bends around you, you march on the Order's Grand Fortress.
+
+The battle is legendary. You fight through hundreds of knights, leaving a trail of destruction. You reach the inner sanctum where the Ashen King sits on his throne of bones, feeding on captured essences.
+
+He's massive, terrible, a vestige so powerful he's become something new. When he sees you, he laughs.
+
+"More power for me," he says, reaching out to consume you.
+
+That's when you strike. Not with magic. With yourselves. You offer your essence freely, letting him drink deep.
+
+And the poison takes hold.
+
+The King screams as your corruption floods him. He tries to purge it, but there's too much, too concentrated, too deliberately toxic. He convulses. Reality cracks around him.
+
+"What have you done?" he howls.
+
+"Given you what you wanted," you say, holding Kael's hand as your bodies begin to dissolve. "Power. All of it. Everything we were. I hope it chokes you."
+
+The King explodes. The fortress shakes. The vestiges he consumed are freed, dissipating into the air.
+
+And you and Kael fade together, essence scattering, consciousness dimming.
+
+With your last thought, you feel her hand in yours.
+
+"Worth it?" she whispers.
+
+"Worth it," you agree.
+
+Then nothing.
+
+But the Order falls into chaos without their god. Mages begin to rebuild. A new world becomes possible, born from your sacrifice.
+
+**ENDING: THE MARTYRS**
+*You chose to burn so others might live in light. Together, you poisoned a god and freed a world from his hunger. Your names become legend—the Mage and the Knight who loved each other enough to die together. It's tragic. It's beautiful. It's the ending you chose.*`,
+                final: true,
+                effects: { ending: "martyrs" }
+            },
+
+            game_over: {
+                location: "The End",
+                text: "Your journey ends here, in blood and shadow. The world continues on without you, one less voice crying out against the darkness.",
+                final: true
+            }
+        };
+
+        // Combat Functions
+        function startCombat(enemyKey) {
+            const enemy = JSON.parse(JSON.stringify(enemies[enemyKey]));
+            gameState.combat.active = true;
+            gameState.combat.enemy = enemy;
+            gameState.combat.log = [];
+            gameState.combat.turn = "player";
+            
+            updateCombatUI();
+        }
+
+        function updateCombatUI() {
+            const combatPanel = document.getElementById('combat-panel');
+            const storyText = document.getElementById('story-text');
+            const choices = document.getElementById('choices');
+            
+            if (!gameState.combat.active) {
+                combatPanel.classList.add('hidden');
+                return;
+            }
+            
+            combatPanel.classList.remove('hidden');
+            
+            const enemy = gameState.combat.enemy;
+            const playerHealthPercent = (gameState.player.health / gameState.player.maxHealth) * 100;
+            const enemyHealthPercent = (enemy.health / enemy.maxHealth) * 100;
+            
+            combatPanel.innerHTML = `
+                <div class="enemy-info">
+                    <h3>${enemy.name}</h3>
+                    <p>${enemy.description}</p>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: ${enemyHealthPercent}%">
+                            ${enemy.health}/${enemy.maxHealth}
+                        </div>
+                    </div>
+                </div>
+                <div class="enemy-info">
+                    <h3>Ren (You)</h3>
+                    <div class="health-bar">
+                        <div class="health-fill player-health-fill" style="width: ${playerHealthPercent}%">
+                            ${gameState.player.health}/${gameState.player.maxHealth}
+                        </div>
+                    </div>
+                </div>
+                <div class="combat-log">
+                    ${gameState.combat.log.map(entry => `<div class="log-entry ${entry.class}">${entry.text}</div>`).join('')}
+                </div>
+            `;
+            
+            // Generate combat actions
+            choices.innerHTML = '';
+            
+            if (gameState.combat.turn === "player") {
+                const attackBtn = createChoice("Basic Attack", () => playerAttack());
+                choices.appendChild(attackBtn);
+                
+                gameState.player.vestiges.forEach((vestigeKey, index) => {
+                    const vestige = vestiges[vestigeKey];
+                    const abilityBtn = createChoice(`${vestige.abilityName} (${vestige.abilityDesc})`, () => useVestigeAbility(vestigeKey));
+                    choices.appendChild(abilityBtn);
+                });
+                
+                if (gameState.player.inventory.includes("essence_stabilizer")) {
+                    const healBtn = createChoice("Use Essence Stabilizer (Heal + Reduce Corruption)", () => useItem("essence_stabilizer"));
+                    choices.appendChild(healBtn);
+                }
+            }
+        }
+
+        function playerAttack() {
+            const enemy = gameState.combat.enemy;
+            const baseDamage = 15 + (gameState.player.vestiges.length * 5);
+            const damage = Math.max(1, baseDamage - enemy.defense);
+            
+            enemy.health -= damage;
+            addCombatLog(`You strike for ${damage} damage!`, "log-damage");
+            
+            checkCombatEnd();
+        }
+
+        function useVestigeAbility(vestigeKey) {
+            const vestige = vestiges[vestigeKey];
+            const enemy = gameState.combat.enemy;
+            
+            switch(vestige.ability) {
+                case "piercing_gaze":
+                    const damage = vestige.power + 10;
+                    enemy.health -= damage;
+                    addCombatLog(`The Watcher's Eye pierces all defenses! ${damage} damage!`, "log-special");
+                    break;
+                case "venom_strike":
+                    enemy.health -= vestige.power;
+                    enemy.poisoned = 3;
+                    addCombatLog(`Venomous strike! ${vestige.power} damage and poison applied!`, "log-special");
+                    break;
+                case "sacred_shield":
+                    const shield = gameState.player.corruption / 2;
+                    gameState.player.tempShield = shield;
+                    gameState.player.corruption = Math.max(0, gameState.player.corruption - 5);
+                    addCombatLog(`Sacred shield grants ${Math.floor(shield)} protection!`, "log-heal");
+                    break;
+                case "dominion":
+                    enemy.stunned = 2;
+                    addCombatLog(`Your will dominates! Enemy stunned!`, "log-special");
+                    break;
+                case "fade":
+                    gameState.player.dodgeNext = true;
+                    addCombatLog(`You fade from sight...`, "log-special");
+                    break;
+                case "future_echo":
+                    enemy.health -= vestige.power + 15;
+                    gameState.player.corruption += 3;
+                    addCombatLog(`You strike from the future! Massive damage but corruption spreads!`, "log-special");
+                    break;
+            }
+            
+            checkCombatEnd();
+        }
+
+        function enemyAttack() {
+            const enemy = gameState.combat.enemy;
+            
+            if (enemy.stunned && enemy.stunned > 0) {
+                enemy.stunned--;
+                addCombatLog(`${enemy.name} is stunned!`, "log-special");
+                gameState.combat.turn = "player";
+                updateCombatUI();
+                return;
+            }
+            
+            if (gameState.player.dodgeNext) {
+                addCombatLog(`You dodge the attack and counter!`, "log-special");
+                enemy.health -= 10;
+                gameState.player.dodgeNext = false;
+                gameState.combat.turn = "player";
+                checkCombatEnd();
+                return;
+            }
+            
+            let damage = enemy.damage;
+            if (gameState.player.tempShield) {
+                const blocked = Math.min(damage, gameState.player.tempShield);
+                gameState.player.tempShield -= blocked;
+                damage -= blocked;
+                addCombatLog(`Shield blocks ${blocked} damage!`, "log-heal");
+            }
+            
+            gameState.player.health -= damage;
+            addCombatLog(`${enemy.name} attacks for ${damage} damage!`, "log-damage");
+            
+            if (enemy.poisoned && enemy.poisoned > 0) {
+                enemy.health -= 5;
+                enemy.poisoned--;
+                addCombatLog(`Poison deals 5 damage!`, "log-special");
+            }
+            
+            checkCombatEnd();
+        }
+
+        function checkCombatEnd() {
+            if (gameState.combat.enemy.health <= 0) {
+                addCombatLog(`${gameState.combat.enemy.name} has been defeated!`, "log-special");
+                setTimeout(() => {
+                    const currentScene = getCurrentScene();
+                    gameState.combat.active = false;
+                    if (currentScene.onVictory) {
+                        goToScene(currentScene.onVictory);
+                    }
+                }, 1500);
+                return;
+            }
+            
+            if (gameState.player.health <= 0) {
+                addCombatLog(`You have fallen...`, "log-damage");
+                setTimeout(() => {
+                    const currentScene = getCurrentScene();
+                    gameState.combat.active = false;
+                    if (currentScene.onDefeat) {
+                        goToScene(currentScene.onDefeat);
+                    } else {
+                        goToScene("game_over");
+                    }
+                }, 1500);
+                return;
+            }
+            
+            if (gameState.combat.turn === "player") {
+                gameState.combat.turn = "enemy";
+                setTimeout(() => enemyAttack(), 1000);
+            } else {
+                gameState.combat.turn = "player";
+                updateCombatUI();
+            }
+        }
+
+        function addCombatLog(text, cssClass = "") {
+            gameState.combat.log.push({ text, class: cssClass });
+            if (gameState.combat.log.length > 10) {
+                gameState.combat.log.shift();
+            }
+            updateCombatUI();
+        }
+
+        function useItem(itemKey) {
+            if (itemKey === "essence_stabilizer") {
+                gameState.player.health = Math.min(gameState.player.maxHealth, gameState.player.health + 50);
+                gameState.player.corruption = Math.max(0, gameState.player.corruption - 10);
+                gameState.player.inventory = gameState.player.inventory.filter(i => i !== itemKey);
+                addCombatLog(`Essence stabilized! Health and corruption improved!`, "log-heal");
+            }
+            gameState.combat.turn = "enemy";
+            setTimeout(() => enemyAttack(), 1000);
+        }
+
+        // Main Game Functions
+        function setupGameScreen() {
+            document.getElementById('title-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('stats-panel').classList.remove('hidden');
+            document.getElementById('vestige-panel').classList.remove('hidden');
+
+            const saveLoadContainer = document.getElementById('save-load-container');
+            saveLoadContainer.innerHTML = `
+                <button class="save-load-btn" onclick="saveGame()">Save</button>
+                <button class="save-load-btn" onclick="loadGame()">Load</button>
+            `;
+        }
+
+        function startGame() {
+            setupGameScreen();
+            goToScene('opening');
+        }
+
+        function getCurrentScene() {
+            return scenes[gameState.player.location];
+        }
+
+        function goToScene(sceneKey) {
+            if (!scenes[sceneKey]) {
+                console.error("Scene not found:", sceneKey);
+                return;
+            }
+            
+            gameState.player.location = sceneKey;
+            const scene = scenes[sceneKey];
+            
+            // Apply effects
+            if (scene.effects) {
+                applyEffects(scene.effects);
+            }
+            
+            // Check if combat
+            if (scene.combat) {
+                startCombat(scene.enemy);
+            }
+            
+            // Update UI
+            updateUI(scene);
+        }
+
+        function applyEffects(effects) {
+            if (effects.corruption !== undefined) {
+                gameState.player.corruption = Math.max(0, Math.min(100, gameState.player.corruption + effects.corruption));
+            }
+            if (effects.health !== undefined) {
+                gameState.player.health = Math.max(0, Math.min(gameState.player.maxHealth, gameState.player.health + effects.health));
+            }
+            if (effects.essence !== undefined) {
+                gameState.player.essence += effects.essence;
+            }
+            if (effects.vestige) {
+                if (!gameState.player.vestiges.includes(effects.vestige)) {
+                    gameState.player.vestiges.push(effects.vestige);
+                }
+            }
+            if (effects.item) {
+                if (!gameState.player.inventory.includes(effects.item)) {
+                    gameState.player.inventory.push(effects.item);
+                }
+            }
+            if (effects.flag) {
+                gameState.player.flags[effects.flag] = true;
+            }
+            if (effects.kaelTrust !== undefined) {
+                gameState.player.flags.kaelTrust = (gameState.player.flags.kaelTrust || 0) + effects.kaelTrust;
+            }
+            if (effects.kaelRespect !== undefined) {
+                gameState.player.flags.kaelRespect = (gameState.player.flags.kaelRespect || 0) + effects.kaelRespect;
+            }
+            if (effects.ending) {
+                // Game has ended
+            }
+        }
+
+        function updateUI(scene) {
+            // Update location
+            document.getElementById('location-header').textContent = scene.location || "";
+            
+            // Update story text
+            document.getElementById('story-text').textContent = scene.text;
+            
+            // Update choices
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            if (scene.final) {
+                const restartBtn = createChoice("Begin Again", () => location.reload());
+                choicesDiv.appendChild(restartBtn);
+            } else if (scene.choices && !scene.combat) {
+                scene.choices.forEach(choice => {
+                    const btn = createChoice(choice.text, () => goToScene(choice.action));
+                    choicesDiv.appendChild(btn);
+                });
+            }
+            
+            // Update stats
+            updateStats();
+            
+            // Update vestiges
+            updateVestiges();
+        }
+
+        function createChoice(text, action) {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = text;
+            btn.onclick = action;
+            return btn;
+        }
+
+        function updateStats() {
+            const statsPanel = document.getElementById('stats-panel');
+            const corruptionColor = gameState.player.corruption > 70 ? '#ff4444' : gameState.player.corruption > 40 ? '#ffaa44' : '#d4d4d4';
+            
+            statsPanel.innerHTML = `
+                <div class="stat-row">
+                    <span class="stat-label">Health:</span>
+                    <span class="stat-value">${gameState.player.health}/${gameState.player.maxHealth}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Corruption:</span>
+                    <span class="stat-value" style="color: ${corruptionColor}">${gameState.player.corruption}%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Essence:</span>
+                    <span class="stat-value">${gameState.player.essence}</span>
+                </div>
+            `;
+        }
+
+        function updateVestiges() {
+            const vestigePanel = document.getElementById('vestige-panel');
+            
+            if (gameState.player.vestiges.length === 0) {
+                vestigePanel.classList.add('hidden');
+                return;
+            }
+            
+            vestigePanel.classList.remove('hidden');
+            vestigePanel.innerHTML = '<h3 style="color: #8b7355; margin-bottom: 10px;">Bound Vestiges</h3>';
+            
+            gameState.player.vestiges.forEach(vestigeKey => {
+                const vestige = vestiges[vestigeKey];
+                const vestigeDiv = document.createElement('div');
+                vestigeDiv.className = 'vestige-item';
+                vestigeDiv.innerHTML = `
+                    <div class="vestige-name">${vestige.name}</div>
+                    <div class="vestige-desc">${vestige.description}</div>
+                `;
+                vestigePanel.appendChild(vestigeDiv);
+            });
+        }
+
+        // Save/Load Functions
+        function saveGame() {
+            try {
+                localStorage.setItem('hollowVestigeSave', JSON.stringify(gameState));
+                alert('Game Saved!');
+            } catch (e) {
+                console.error("Failed to save game:", e);
+                alert('Could not save game. Your browser might be in private mode or storage is full.');
+            }
+        }
+
+        function loadGame() {
+            const savedStateJSON = localStorage.getItem('hollowVestigeSave');
+            if (savedStateJSON) {
+                try {
+                    const loadedState = JSON.parse(savedStateJSON);
+                    gameState = loadedState;
+                    
+                    setupGameScreen();
+                    
+                    if (gameState.combat.active) {
+                        updateCombatUI();
+                    } else {
+                        updateUI(getCurrentScene());
+                    }
+                } catch (e) {
+                    console.error("Failed to load game:", e);
+                    alert('Failed to load save data. The file might be corrupted.');
+                }
+            } else {
+                alert('No save game found.');
+            }
+        }
+
+        // Initialize
+        window.onload = function() {
+            if (localStorage.getItem('hollowVestigeSave')) {
+                document.getElementById('continue-btn').classList.remove('hidden');
+            }
+        };
+    </script>
+</body>
+  </html>
